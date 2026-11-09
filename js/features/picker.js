@@ -37,8 +37,7 @@ $("pickActions").onclick = (e) => {
   const b = e.target.closest("[data-action]");
   if (!b) return;
   const action = b.dataset.action;
-  // 水槽が1つなら、すぐに記録画面へ（細かい内容を入れられる）
-  if (pickTankIds.length === 1) { openLog({ date: pickDate, tankId: pickTankIds[0], action }); return; }
+  // タップは「選ぶだけ」。選び直しもできる（記録画面へ進むのは下のボタン）
   pickAction = action;
   renderPickActions();
 };
