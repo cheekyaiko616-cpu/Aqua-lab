@@ -1,0 +1,109 @@
+/* ===== 基本：色・文字・画面の骨組み（ヘッダー・本文・下のタブ・起動画面） ===== */
+:root {
+  --bg: #f2f6f8; --surface: #ffffff; --text: #13283a; --muted: #627889;
+  --accent: #1f6f9a; --accent2: #7fb8d6; --accent-soft: #e2eef5;
+  --danger: #c4574d; --border: #dbe5ec;
+  --hero: linear-gradient(135deg, #145a80, #2a8bb0);
+  --warn-bg: #fbe9e5; --warn-fg: #a8463d;
+  --caution-bg: #fff4d6; --caution-fg: #8a6200;
+  --chip-fg: #17324a; --on-accent: #ffffff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b141b; --surface: #121f29; --text: #e2ecf2; --muted: #93a7b5;
+    --accent: #6fb7dc; --accent2: #2f7fa6; --accent-soft: #16303f;
+    --danger: #eba39a; --border: #22394a;
+    --hero: linear-gradient(135deg, #0f425f, #1f6a8c);
+    --warn-bg: #3f2623; --warn-fg: #eba39a;
+    --caution-bg: #3a3218; --caution-fg: #e8c46a; --on-accent: #06202e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b141b; --surface: #121f29; --text: #e2ecf2; --muted: #93a7b5;
+  --accent: #6fb7dc; --accent2: #2f7fa6; --accent-soft: #16303f;
+  --danger: #eba39a; --border: #22394a;
+  --hero: linear-gradient(135deg, #0f425f, #1f6a8c);
+  --warn-bg: #3f2623; --warn-fg: #eba39a;
+  --caution-bg: #3a3218; --caution-fg: #e8c46a; --on-accent: #06202e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); }
+html { height: 100%; }
+body {
+  margin: 0; height: 100%; height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  overscroll-behavior: none; touch-action: manipulation; color: var(--text);
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  background: var(--bg);
+  background-image: radial-gradient(circle at 10% 0%, rgba(90,170,220,0.16), transparent 40%),
+                    radial-gradient(circle at 100% 20%, rgba(120,220,210,0.10), transparent 35%);
+}
+button, select, input, textarea { font: inherit; }
+
+/* ヘッダー（魚の模様を薄く敷く。模様は images/header-pattern.png） */
+header {
+  flex-shrink: 0; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--hero); color: #fff; padding: 14px 16px;
+  box-shadow: 0 2px 10px rgba(20,90,128,0.25);
+  display: flex; align-items: center; justify-content: center; min-height: 52px; overflow: hidden;
+}
+header h1 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: 0.04em; animation: titleIn .45s ease; }
+header::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: url("../images/header-pattern.png");
+  background-size: 300px 128px; background-position: center; opacity: 0.2; pointer-events: none;
+}
+header > * { position: relative; z-index: 1; }
+.brand { display: none; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 13px; letter-spacing: 0.18em; color: #fff; opacity: 0.92; }
+header.calendar-head { flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 10px 16px 12px; }
+header.calendar-head .brand { display: block; }
+header.calendar-head h1 { display: none; }
+
+main { padding: 16px 16px 110px; max-width: 720px; width: 100%; margin: 0 auto; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; -webkit-overflow-scrolling: touch; }
+.view { display: none; }
+.view.active { display: block; animation: viewIn .45s cubic-bezier(.22,.61,.36,1); }
+
+/* 下のタブ */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 10;
+  box-shadow: 0 -4px 14px rgba(0,0,0,0.05);
+}
+.tabbar button {
+  flex: 1; background: none; border: none; padding: 12px 2px; min-height: 60px; justify-content: center; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; cursor: pointer;
+}
+.tab-ic { width: 28px; height: 28px; display: block; }
+.tabbar button .ico { font-size: 19px; padding: 4px 20px; border-radius: 999px; transition: background .2s; }
+.tabbar button.active { color: var(--accent); font-weight: bold; }
+.tabbar button.active .ico { background: var(--accent-soft); }
+
+/* 起動画面 */
+.splash { position: fixed; inset: 0; z-index: 100; background: var(--hero); display: flex; align-items: center; justify-content: center; transition: opacity .45s ease, visibility .45s; }
+.splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.splash-ic { position: relative; width: 180px; height: 180px; perspective: 720px; -webkit-perspective: 720px; }
+.splash-disc { position: absolute; inset: 0; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; will-change: transform; }
+.splash-disc img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+.splash-shadow { position: absolute; left: 50%; bottom: -14px; width: 120px; height: 14px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0)); transform: translateX(-50%); opacity: .35; }
+.splash-name { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 13px; letter-spacing: .18em; color: #fff; opacity: .9; }
+.splash-dots { display: flex; gap: 6px; }
+.splash-dots span { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: rise .75s ease-in-out 3; }
+.splash-dots span:nth-child(2) { animation-delay: .15s; }
+.splash-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes rise { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-4px); } }
+/* 起動画面が消えるまで本体を表示しない（CSSだけで時間が来たら表示） */
+header, main, .tabbar { visibility: hidden; animation: revealAfterSplash 0s linear 2.35s forwards; }
+@keyframes revealAfterSplash { to { visibility: visible; } }
+@keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sheetUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes titleIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dayFromRight { from { opacity: .4; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes dayFromLeft { from { opacity: .4; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+/* キーボード操作のときだけ、いま選んでいる場所を枠で示す */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sheet:focus, .frame:focus { outline: none; }

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Aqua-lab</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/tanks.css">
+<link rel="stylesheet" href="css/forms.css">
+<link rel="stylesheet" href="css/care.css">
+<link rel="stylesheet" href="css/graph-settings.css">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aqua-lab">
+<meta name="theme-color" content="#145a80">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-180.png">
+</head>
+<body>
+<div class="splash" id="splash" aria-hidden="true"><div class="splash-inner">
+  <div class="splash-ic" id="splashIc" aria-hidden="true"></div>
+  <div class="splash-name">Aqua-lab</div>
+  <div class="splash-dots"><span></span><span></span><span></span></div>
+</div></div>
+
+<header><h1 id="pageTitle">カレンダー</h1><div class="brand">Aqua-lab</div><div class="month-pick" id="monthPickWrap"><button class="pill" id="pickBtn" type="button" aria-label="年と月を選ぶ"><span id="pickYear"></span><span id="pickMonth"></span><span class="caret">▼</span></button><button class="today-btn" id="todayBtn" type="button">今日</button></div></header>
+
+<main>
+  <!-- カレンダー -->
+  <section class="view active" id="view-calendar">
+    <div class="hero" id="hero" role="button" tabindex="0" aria-expanded="false">
+      <div class="big" id="heroBig"></div>
+      <div class="small" id="heroSmall"></div>
+      <div id="heroDetail" style="display:none;margin-top:8px;"></div>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="secondary" id="prevM" type="button" aria-label="前の月">‹</button>
+        <button class="secondary" id="nextM" type="button" aria-label="次の月">›</button>
+      </div>
+      <div class="weekdays">
+        <div class="sun">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="sat">土</div>
+      </div>
+      <div class="cal-grid" id="calGrid" style="margin-top:4px;"></div>
+      <div class="cal-legend" id="calLegend"></div>
+    </div>
+  </section>
+
+  <!-- 水槽一覧 -->
+  <section class="view" id="view-tanks">
+    <div class="row-head">
+      <div class="count" id="tankCount"></div>
+      <button class="primary" id="addTankBtn">＋ 水槽を追加</button>
+    </div>
+    <div class="grid" id="tankGrid"></div>
+    <div class="empty" id="tankEmpty" style="display:none;"><svg class="empty-ic" aria-hidden="true"><use href="#i-tank"/></svg>まだ水槽が登録されていません。<br>「＋ 水槽を追加」から登録してみましょう</div>
+  </section>
+
+  <!-- 水質グラフ -->
+  <section class="view" id="view-graph">
+    <button id="gTankBtn" type="button" class="tank-btn"></button>
+    <div class="seg" id="gMetric" role="group" aria-label="グラフの項目">
+      <button data-metric="temp" class="active">水温</button>
+      <button data-metric="ph">pH</button>
+      <button data-metric="no2">亜硝酸</button>
+      <button data-metric="no3">硝酸塩</button>
+    </div>
+    <div class="seg" id="gRange" role="group" aria-label="表示する期間">
+      <button data-range="1">1ヶ月</button>
+      <button data-range="6" class="active">6ヶ月</button>
+      <button data-range="12">12ヶ月</button>
+    </div>
+    <div class="period-nav">
+      <button class="secondary" id="gPrev" type="button" aria-label="前の期間">‹</button>
+      <div id="gPeriodLabel"></div>
+      <button class="secondary" id="gNext" type="button" aria-label="次の期間">›</button>
+    </div>
+    <div class="chart-box"><div id="chart"></div></div>
+    <div class="g-detail" id="gDetail" aria-live="polite"></div>
+  </section>
+
+  <!-- 設定 -->
+  <section class="view" id="view-settings">
+    <div class="setting-group">
+      <h3>テーマ（配色）</h3>
+      <div class="opt-row" id="themeOpts" role="group" aria-label="テーマ（配色）">
+        <button data-theme-set="system">自動</button>
+        <button data-theme-set="light">ライト</button>
+        <button data-theme-set="dark">ダーク</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div><h3 style="margin:0;">状態タグ</h3><div class="hint" id="tagCount"></div></div>
+        <button class="primary" id="tagManageBtn" type="button" style="flex-shrink:0;">編集</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <h3>バックアップ</h3>
+      <div class="hint" id="backupInfo"></div>
+      <div style="margin-top:8px;"><button class="primary" id="exportBtn">データを書き出す</button></div>
+      <div id="exportFallback" style="display:none;">
+        <textarea class="export-text" id="exportText" readonly aria-label="書き出したデータ"></textarea>
+        <div style="margin-top:6px;"><button class="secondary" id="copyExport">内容をコピー</button></div>
+        <div class="hint">ファイルを保存できない環境のため、内容をコピーして保存してください。</div>
+      </div>
+      <h3 class="sub-h">読み込み</h3>
+      <input type="file" id="importFile" accept="application/json,.json" aria-label="バックアップファイルを選ぶ">
+      <div class="hint">読み込むと、今のデータは選んだファイルの内容に置き換わります。</div>
+    </div>
+    <div class="setting-group">
+      <h3>データ</h3>
+      <div class="hint" id="dataInfo"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="メインメニュー">
+  <button data-tab="calendar" class="active" aria-label="カレンダー" aria-current="page"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-calendar"/></svg></span></button>
+  <button data-tab="tanks" aria-label="水槽一覧"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-tank"/></svg></span></button>
+  <button data-tab="graph" aria-label="水質グラフ"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-chart"/></svg></span></button>
+  <button data-tab="settings" aria-label="設定"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-gear"/></svg></span></button>
+</nav>
+
+<!-- 水槽の詳細 -->
+<div class="overlay" id="tankOverlay" role="dialog" aria-modal="true" aria-labelledby="tankTitle">
+  <div class="sheet">
+    <div id="tankBody"></div>
+    <div class="btns">
+      <button class="danger" id="tankDelete">削除</button>
+      <button class="secondary" id="tankEditBtn">編集</button>
+      <button class="secondary" id="tankClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 生体の詳細 -->
+<div class="overlay" id="fishOverlay" role="dialog" aria-modal="true" aria-labelledby="fishTitle">
+  <div class="sheet">
+    <div id="fishBody"></div>
+    <div class="btns">
+      <button class="danger" id="fishDelete">削除</button>
+      <button class="secondary" id="fishEditBtn">編集</button>
+      <button class="secondary" id="fishClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 内容ごとの記録履歴 -->
+<div class="overlay" id="historyOverlay" role="dialog" aria-modal="true" aria-labelledby="historyTitle" style="z-index:22;">
+  <div class="sheet">
+    <h2 id="historyTitle"></h2>
+    <div id="historyBody"></div>
+    <div class="btns"><button class="secondary" id="historyClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 日ごとの記録 -->
+<div class="overlay" id="dayOverlay" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
+  <div class="sheet">
+    <div class="row-head" style="align-items:center;"><h2 id="dayTitle" style="margin:0;"></h2><button class="primary" id="dayAdd">＋ 記録する</button></div>
+    <div id="dayPlan"></div>
+    <div id="dayBody"></div>
+    <div class="btns"><button class="secondary" id="dayClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 記録の選択（水槽と内容） -->
+<div class="overlay" id="pickOverlay" role="dialog" aria-modal="true" aria-label="お世話の記録" style="z-index:23;">
+  <div class="sheet">
+    <h2>お世話の記録</h2>
+    <div id="pickTanks" style="margin-top:8px;"></div>
+    <div class="section"><h3>内容</h3><div class="action-grid" id="pickActions"></div></div>
+    <div class="btns"><button class="secondary" id="pickCancel">キャンセル</button><button class="primary" id="pickSave" disabled>記録</button></div>
+  </div>
+</div>
+
+<!-- 年月の選択 -->
+<div class="overlay" id="wheelOverlay" role="dialog" aria-modal="true" aria-label="年と月を選ぶ" style="z-index:21;">
+  <div class="sheet">
+    <div class="wheel-head">
+      <button class="secondary" id="wheelCancel">キャンセル</button>
+      <button class="primary" id="wheelOk">決定</button>
+    </div>
+    <div class="wheel-box">
+      <div class="wheel-band"></div>
+      <div class="wheel" id="wheelY"></div>
+      <div class="wheel" id="wheelM"></div>
+    </div>
+  </div>
+</div>
+
+<!-- グラフの水槽を選ぶ -->
+<div class="overlay" id="tankPickOverlay" role="dialog" aria-modal="true" aria-label="水槽を選ぶ" style="z-index:21;">
+  <div class="sheet">
+    <h2>水槽を選ぶ</h2>
+    <div id="gPickList" style="margin-top:8px;"></div>
+    <div class="btns"><button class="secondary" id="gPickCancel">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 水槽の追加・編集 -->
+<div class="overlay" id="tankEditOverlay" role="dialog" aria-modal="true" aria-labelledby="teTitle" style="z-index:24;">
+  <div class="sheet">
+    <h2 id="teTitle">水槽を追加</h2>
+    <label for="teName">水槽の名前</label>
+    <input type="text" id="teName" maxlength="30" placeholder="例：リビングの60cm">
+    <div class="two">
+      <div><label for="teType">種類</label><select id="teType"></select></div>
+      <div><label for="teVolume">水量（L）</label><input type="number" id="teVolume" min="0" max="99999" step="any" inputmode="decimal"></div>
+    </div>
+    <div class="two">
+      <div><label for="teSetup">立ち上げ日</label><input type="date" id="teSetup"></div>
+      <div><label for="teInterval">水換え間隔（日）</label><input type="number" id="teInterval" min="1" max="365" inputmode="numeric"></div>
+    </div>
+    <div class="two">
+      <div><label for="tePercent">1回の換水量（%）</label><input type="number" id="tePercent" min="1" max="100" inputmode="numeric"></div>
+    </div>
+    <label for="tePhoto">写真（任意）</label>
+    <div class="photo-row">
+      <input type="file" id="tePhoto" accept="image/*" aria-label="水槽の写真を選ぶ">
+      <img id="tePhotoPreview" class="photo-preview" alt="選んだ写真">
+      <button class="secondary" id="tePhotoClear" type="button" style="display:none;">外す</button>
+    </div>
+    <label for="teMemo">メモ</label>
+    <textarea id="teMemo" maxlength="300" placeholder="フィルター・照明・底床など"></textarea>
+    <div class="btns">
+      <button class="secondary" id="teCancel">キャンセル</button>
+      <button class="primary" id="teSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 生体の追加・編集 -->
+<div class="overlay" id="fishEditOverlay" role="dialog" aria-modal="true" aria-labelledby="feTitle" style="z-index:24;">
+  <div class="sheet">
+    <h2 id="feTitle">生体を追加</h2>
+    <label for="feTank">水槽</label>
+    <select id="feTank"></select>
+    <div class="tabs">
+      <button id="feSelectTab" type="button" class="active">分類・種類から選ぶ</button>
+      <button id="feTextTab" type="button">自由に入力</button>
+    </div>
+    <div id="feSelectMode">
+      <div class="two">
+        <div><label for="feCat">分類</label><select id="feCat"></select></div>
+        <div><label for="feVar">種類</label><select id="feVar"></select></div>
+      </div>
+      <input type="text" id="feVarOther" maxlength="30" aria-label="種類名（自由入力）" style="display:none;margin-top:8px;">
+    </div>
+    <div id="feTextMode" style="display:none;">
+      <label for="feTypeText">種類</label>
+      <input type="text" id="feTypeText" maxlength="30">
+    </div>
+    <div class="two">
+      <div><label for="feName">呼び名（任意）</label><input type="text" id="feName" maxlength="30"></div>
+      <div><label for="feCount">数</label><input type="number" id="feCount" min="1" max="9999" inputmode="numeric"></div>
+    </div>
+    <div class="two">
+      <div><label for="feAcquired">迎えた日</label><input type="date" id="feAcquired"></div>
+      <div><label for="feSex">オス・メス</label><select id="feSex"><option value="">不明</option><option>オス</option><option>メス</option><option>ペア・混合</option></select></div>
+    </div>
+    <label for="fePhoto">写真（任意）</label>
+    <div class="photo-row">
+      <input type="file" id="fePhoto" accept="image/*" aria-label="生体の写真を選ぶ">
+      <img id="fePhotoPreview" class="photo-preview" alt="選んだ写真">
+      <button class="secondary" id="fePhotoClear" type="button" style="display:none;">外す</button>
+    </div>
+    <label for="feMemo">メモ</label>
+    <textarea id="feMemo" maxlength="300"></textarea>
+    <div class="btns">
+      <button class="secondary" id="feCancel">キャンセル</button>
+      <button class="primary" id="feSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 機器の追加・編集 -->
+<div class="overlay" id="equipEditOverlay" role="dialog" aria-modal="true" aria-labelledby="eqTitle" style="z-index:24;">
+  <div class="sheet">
+    <h2 id="eqTitle">機器を追加</h2>
+    <div class="two">
+      <div><label for="eqTank">水槽</label><select id="eqTank"></select></div>
+      <div><label for="eqKind">種類</label><select id="eqKind"></select></div>
+    </div>
+    <label for="eqName">名前・型番（任意）</label>
+    <input type="text" id="eqName" maxlength="40" placeholder="例：○○ 外部フィルター 2213">
+    <div class="two">
+      <div><label for="eqSince">使い始めた日</label><input type="date" id="eqSince"></div>
+      <div><label for="eqInterval">手入れ・交換の間隔（日）</label><input type="number" id="eqInterval" min="1" max="3650" inputmode="numeric"></div>
+    </div>
+    <div class="hint" id="eqHint"></div>
+    <label for="eqMemo">メモ</label>
+    <textarea id="eqMemo" maxlength="200" placeholder="ワット数・購入先・保証期限など"></textarea>
+    <label class="chk" id="eqRetiredBox"><input type="checkbox" id="eqRetired"> 使わなくなった（一覧と通知から外す）</label>
+    <div class="btns">
+      <button class="danger" id="eqDelete" style="display:none;">削除</button>
+      <button class="secondary" id="eqCancel">キャンセル</button>
+      <button class="primary" id="eqSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 薬浴の開始・編集 -->
+<div class="overlay" id="treatEditOverlay" role="dialog" aria-modal="true" aria-labelledby="trTitle" style="z-index:24;">
+  <div class="sheet">
+    <h2 id="trTitle">薬浴を始める</h2>
+    <label for="trTank">水槽（薬浴する水槽）</label>
+    <select id="trTank"></select>
+    <label id="trFishLabel">対象の生体（選ばなければ水槽全体）</label>
+    <div class="chk-list" id="trFishBox"></div>
+    <div class="two">
+      <div><label for="trReason">症状・目的</label><input type="text" id="trReason" maxlength="30" list="trReasonList" placeholder="例：白点病"><datalist id="trReasonList"></datalist></div>
+      <div><label for="trDrug">薬・処置</label><input type="text" id="trDrug" maxlength="30" list="trDrugList" placeholder="例：メチレンブルー"><datalist id="trDrugList"></datalist></div>
+    </div>
+    <div class="two">
+      <div><label for="trDose">量・濃度</label><input type="text" id="trDose" maxlength="30" placeholder="例：規定量"></div>
+      <div><label for="trStart">始めた日</label><input type="date" id="trStart"></div>
+    </div>
+    <div class="two">
+      <div><label for="trDays">予定の日数</label><input type="number" id="trDays" min="1" max="365" inputmode="numeric" placeholder="例：7"></div>
+      <div><label for="trEvery">薬の追加・水換えの間隔（日）</label><input type="number" id="trEvery" min="1" max="60" inputmode="numeric" placeholder="例：3"></div>
+    </div>
+    <label for="trMemo">メモ</label>
+    <textarea id="trMemo" maxlength="200" placeholder="水温・塩分・餌を止めたかなど"></textarea>
+    <div id="trEditBox" style="display:none;">
+      <label for="trStatus">状態</label>
+      <select id="trStatus"><option value="active">薬浴中</option><option value="done">終了</option></select>
+      <div class="two" id="trEndBox" style="display:none;">
+        <div><label for="trEnd">終わった日</label><input type="date" id="trEnd"></div>
+        <div><label for="trResult">結果</label><select id="trResult"></select></div>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="danger" id="trDelete" style="display:none;">削除</button>
+      <button class="secondary" id="trCancel">キャンセル</button>
+      <button class="primary" id="trSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 記録の追加・編集 -->
+<div class="overlay" id="logOverlay" role="dialog" aria-modal="true" aria-labelledby="logTitle" style="z-index:25;">
+  <div class="sheet">
+    <h2 id="logTitle">記録する</h2>
+    <div class="day-nav">
+      <button class="secondary" id="lPrev" type="button" aria-label="前の日">‹</button>
+      <div class="day-text" id="lDateText"></div>
+      <button class="secondary" id="lNext" type="button" aria-label="次の日">›</button>
+    </div>
+    <input type="date" id="lDate" style="display:none;">
+    <div class="two">
+      <div><label for="lTank">水槽</label><select id="lTank"></select></div>
+      <div><label for="lAction">内容</label><select id="lAction"></select></div>
+    </div>
+    <div id="lTargetBox">
+      <label for="lTarget">対象</label>
+      <select id="lTarget"></select>
+    </div>
+    <div class="act-box" id="lWcBox">
+      <div class="size-row"><span>換水量</span><input type="number" id="lPct" min="1" max="100" inputmode="numeric" aria-label="換水量（パーセント）"><span>%</span></div>
+    </div>
+    <div class="act-box" id="lItemBox">
+      <div class="two">
+        <div><label for="lItem" id="lItemLabel">名前</label><input type="text" id="lItem" maxlength="30" list="lItemList"><datalist id="lItemList"></datalist></div>
+        <div><label for="lAmount">量</label><input type="text" id="lAmount" maxlength="20"></div>
+      </div>
+    </div>
+    <div class="act-box" id="lEquipBox">
+      <label for="lEquip">手入れ・交換した機器</label>
+      <select id="lEquip"></select>
+    </div>
+    <div class="act-box" id="lTreatBox">
+      <label for="lTreat">薬浴</label>
+      <select id="lTreat"></select>
+      <label for="lProgress">魚の経過</label>
+      <select id="lProgress"></select>
+      <label class="chk"><input type="checkbox" id="lDosed"> 今日、薬の追加・水換えをした</label>
+    </div>
+    <div class="act-box" id="lWaterBox"><div class="water-grid" id="lWaterGrid"></div></div>
+    <label for="lMemo">メモ</label>
+    <textarea id="lMemo" maxlength="200"></textarea>
+    <label for="lPhoto">写真</label>
+    <div class="photo-row">
+      <input type="file" id="lPhoto" accept="image/*" aria-label="写真を選ぶ">
+      <img id="lPhotoPreview" class="photo-preview" alt="選んだ写真">
+      <button class="secondary" id="lPhotoClear" type="button" style="display:none;">外す</button>
+    </div>
+    <div id="lTagsBox" class="fold">
+      <button type="button" class="fold-label" id="lTagsToggle" aria-expanded="false" aria-controls="lTagsBody"><span>状態</span><span class="caret" id="lTagsCaret">▼</span><span class="sel" id="lTagsSel"></span></button>
+      <div id="lTagsBody" style="display:none;"><div class="tag-wrap" id="lTags"></div></div>
+    </div>
+    <div class="btns">
+      <button class="secondary" id="logCancel">キャンセル</button>
+      <button class="primary" id="logSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 写真の拡大 -->
+<div class="overlay lightbox" id="photoOverlay" role="dialog" aria-modal="true" aria-label="写真の拡大表示" style="z-index:26;">
+  <div class="frame">
+    <img id="photoImg" alt="">
+    <div class="cap" id="photoCap"></div>
+    <div class="btns" style="justify-content:center;"><button class="secondary" id="photoClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 状態タグ -->
+<div class="overlay" id="tagOverlay" role="dialog" aria-modal="true" aria-label="状態タグ" style="z-index:21;">
+  <div class="sheet">
+    <h2>状態タグ</h2>
+    <div class="seg" id="tagKind" role="group" aria-label="タグの種類">
+      <button data-kind="tank" class="active">水槽</button>
+      <button data-kind="fish">生体</button>
+    </div>
+    <div class="hint">タグを長押しして上下にドラッグすると、順番を入れ替えられます。</div>
+    <div class="tag-add">
+      <input type="text" id="tagNew" maxlength="12" aria-label="新しいタグの名前">
+      <button class="primary" id="tagAdd" type="button">追加</button>
+    </div>
+    <div id="tagList" style="margin-top:12px;"></div>
+    <div class="btns"><button class="secondary" id="tagClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 確認（はい／いいえ） -->
+<div class="overlay" id="askOverlay" role="alertdialog" aria-modal="true" aria-labelledby="askMsg" style="z-index:30;">
+  <div class="sheet center">
+    <h2 id="askMsg" style="color:var(--text);"></h2>
+    <div class="btns">
+      <button class="secondary" id="askNo">いいえ</button>
+      <button class="danger" id="askYes" style="background:var(--danger);color:#fff;border-color:var(--danger);">はい、実行する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- 読み込む順番が大事：core → ui → features → main -->
+<script src="js/core/constants.js"></script>
+<script src="js/core/helpers.js"></script>
+<script src="js/core/catalog.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/core/data-index.js"></script>
+<script src="js/core/aqua.js"></script>
+<script src="js/core/water-change.js"></script>
+<script src="js/core/care.js"></script>
+<script src="js/core/tags.js"></script>
+<script src="js/core/photos.js"></script>
+<script src="js/core/storage.js"></script>
+<script src="js/ui/icons.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/overlay.js"></script>
+<script src="js/ui/confirm.js"></script>
+<script src="js/ui/gestures.js"></script>
+<script src="js/ui/keyboard.js"></script>
+<script src="js/ui/components.js"></script>
+<script src="js/ui/splash.js"></script>
+<script src="js/features/tabs.js"></script>
+<script src="js/features/hero.js"></script>
+<script src="js/features/calendar.js"></script>
+<script src="js/features/day.js"></script>
+<script src="js/features/tank-list.js"></script>
+<script src="js/features/tank-edit.js"></script>
+<script src="js/features/tank-detail.js"></script>
+<script src="js/features/fish-edit.js"></script>
+<script src="js/features/equipment.js"></script>
+<script src="js/features/treatment.js"></script>
+<script src="js/features/fish-detail.js"></script>
+<script src="js/features/history.js"></script>
+<script src="js/features/photo-view.js"></script>
+<script src="js/features/picker.js"></script>
+<script src="js/features/log-edit.js"></script>
+<script src="js/features/graph.js"></script>
+<script src="js/features/tag-manager.js"></script>
+<script src="js/features/settings.js"></script>
+<script src="js/features/backup.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
