@@ -64,7 +64,15 @@ $("fishDelete").onclick = () => {
   if (!f) return;
   askConfirm("「" + fishLabel(f) + "」を削除しますか？この生体の記録も一緒に消えます。", () => {
     state.fish = state.fish.filter((x) => x.id !== f.id);
-    state.logs = state.logs.filter((x) => x.fishId !== f.id);
+    // 複数の生体への記録は、この生体だけを外す（1匹だけの記録は消える）
+    state.logs.forEach((x) => {
+      if (x.fishIds && x.fishIds.includes(f.id)) {
+        x.fishIds = x.fishIds.filter((id) => id !== f.id);
+        x.fishId = x.fishIds[0] || null;
+        if (x.fishIds.length <= 1) delete x.fishIds;
+      }
+    });
+    state.logs = state.logs.filter((x) => !(x.fishId === f.id && !(x.fishIds && x.fishIds.length > 1)));
     state.treatments.forEach((tr) => { if (tr.fishIds) tr.fishIds = tr.fishIds.filter((id) => id !== f.id); });
     if (save()) { closeOverlay("fishOverlay"); afterChange(); toast("削除しました"); }
   });

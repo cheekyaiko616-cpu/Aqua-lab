@@ -12,7 +12,7 @@ function openHistory(q, refresh) {
   setHtml($("historyBody"), list.length
     ? list.map((l) =>
         '<div class="item"><span><b>' + escapeHtml(fmtSlash(l.date)) + '</b>' +
-          (!q.fishId && l.fishId ? ' <small>（' + escapeHtml(fishNameById(l.fishId)) + '）</small>' : '') +
+          (!q.fishId && l.fishId ? ' <small>（' + escapeHtml(logFishNames(l)) + '）</small>' : '') +
           logExtrasHtml(l) + '</span>' +
           (l.photo ? photoImg(l.photo, 'class="hist-thumb" data-hphoto="' + escapeHtml(l.date) + '"', l.date + "の写真（拡大する）") : '') +
           rowButtonHtml({ kind: "secondary", label: "編集", attr: "data-hedit", value: l.id, ariaLabel: l.date + "の" + q.action + "を編集" }) +

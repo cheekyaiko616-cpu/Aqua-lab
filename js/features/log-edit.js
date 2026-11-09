@@ -16,18 +16,33 @@ function setLogPhoto(data) { logPhotoData = data || null; showPickedPhoto("l", l
 function setLogDate(v) { $("lDate").value = v; $("lDateText").textContent = fmtDateKey(v); }
 
 // 対象（水槽全体／生体）の選択肢
-function fillTargets(selectedFishId) {
+// 選んでいる生体（logFishSel）を、画面の選択肢に反映する。給餌は複数選べ、それ以外は1匹まで
+let logFishSel = [];
+function fillTargets() {
   const fish = fishOfTank($("lTank").value);
+  logFishSel = logFishSel.filter((id) => fish.some((f) => f.id === id));
   $("lTarget").innerHTML = '<option value="">水槽全体</option>' +
     fish.map((f) => '<option value="' + f.id + '">' + escapeHtml(fishLabel(f)) + '</option>').join("");
-  $("lTarget").value = selectedFishId && fish.some((f) => f.id === selectedFishId) ? selectedFishId : "";
+  $("lTargetMulti").innerHTML = fish.map((f) =>
+    '<label class="chk"><input type="checkbox" value="' + f.id + '"' + (logFishSel.includes(f.id) ? ' checked' : '') + '> ' + escapeHtml(fishLabel(f)) + '</label>').join("");
+  syncTargetUi();
+}
+function syncTargetUi() {
+  const a = $("lAction").value;
+  if (a !== "給餌" && logFishSel.length > 1) logFishSel = [logFishSel[0]];   // 給餌以外は1匹まで
+  $("lTarget").value = logFishSel[0] || "";
+  $("lTargetMulti").querySelectorAll("input").forEach((i) => { i.checked = logFishSel.includes(i.value); });
 }
 // 内容に合わせて、出す入力欄を切り替える
 function updateActionFields() {
   const a = $("lAction").value;
-  const canFish = FISH_ACTIONS.includes(a) && fishOfTank($("lTank").value).length > 0;
-  $("lTargetBox").style.display = canFish ? "" : "none";
-  if (!canFish) $("lTarget").value = "";
+  const hasFish = fishOfTank($("lTank").value).length > 0;
+  const multi = a === "給餌" && hasFish;                                   // 給餌：複数の生体を選べる
+  const single = FISH_ACTIONS.includes(a) && a !== "給餌" && hasFish;       // 投薬・様子メモなど：1匹まで
+  $("lTargetBox").style.display = single ? "" : "none";
+  $("lTargetMultiBox").style.display = multi ? "" : "none";
+  if (!single && !multi) logFishSel = [];
+  syncTargetUi();
   $("lWcBox").classList.toggle("show", a === "水換え");
   $("lItemBox").classList.toggle("show", a === "給餌" || a === "投薬");
   $("lWaterBox").classList.toggle("show", a === "水質測定");
@@ -59,7 +74,7 @@ function fillCareChoices() {
 }
 // 状態タグは、対象が生体なら「生体用」、それ以外は「水槽用」
 function updateTagKind() {
-  const kind = $("lTarget").value ? "fish" : "tank";
+  const kind = logFishSel.length ? "fish" : "tank";
   if (kind !== logTagKind) { logTagKind = kind; logTags = []; setTagsOpen(false); }
   renderLogTags();
 }
@@ -91,7 +106,8 @@ function openLog(o) {
   $("lTank").value = log ? log.tankId : (o.tankId || state.tanks[0].id);
   $("lAction").innerHTML = ACTIONS.map((a) => '<option value="' + a + '">' + a + '</option>').join("");
   $("lAction").value = log ? log.action : (o.action || "給餌");
-  fillTargets(log ? log.fishId : o.fishId);
+  logFishSel = log ? logFishIds(log).slice() : (o.fishId ? [o.fishId] : []);
+  fillTargets();
   const t = tankById($("lTank").value);
   $("lPct").value = log ? (log.pct || "") : (t && t.wcPercent ? t.wcPercent : "");
   $("lItem").value = log && log.item ? log.item : "";
@@ -109,7 +125,7 @@ function openLog(o) {
   $("lPhoto").value = "";
   setLogPhoto(log && log.photo ? log.photo : null);
   // タグ：先に種類を合わせてから、記録のタグを入れる
-  logTagKind = $("lTarget").value ? "fish" : "tank";
+  logTagKind = logFishSel.length ? "fish" : "tank";
   updateActionFields();
   logTags = log && Array.isArray(log.tags) ? log.tags.slice() : [];
   setTagsOpen(logTags.length > 0 || !!o.openTags);
@@ -121,7 +137,7 @@ function saveLog() {
   const action = $("lAction").value;
   const tankId = $("lTank").value;
   if (!tankId) { toast("水槽を選んでください"); return; }
-  const data = { date: $("lDate").value || todayStr(), tankId, fishId: $("lTarget").value || null, action,
+  const data = { date: $("lDate").value || todayStr(), tankId, fishId: logFishSel[0] || null, action,
     memo: $("lMemo").value.trim(), photo: logPhotoData || null, tags: logTags.slice() };
   if (action === "水換え") {
     const p = readNum("lPct", 1, 100, true);
@@ -133,6 +149,7 @@ function saveLog() {
     if (item) data.item = item;
     if (amount) data.amount = amount;
   }
+  if (logFishSel.length > 1) data.fishIds = logFishSel.slice();
   if (action === "機器の手入れ") {
     if (!$("lEquip").value) { toast("先に、水槽の詳細から機器を登録してください"); return; }
     data.equipId = $("lEquip").value;
@@ -156,7 +173,7 @@ function saveLog() {
   if (logEditId) {
     const log = state.logs.find((x) => x.id === logEditId);
     if (log) {
-      ["pct", "item", "amount", "water", "equipId", "treatmentId", "progress", "dosed"].forEach((k) => { delete log[k]; });   // 内容を変えたときに古い入力を残さない
+      ["pct", "item", "amount", "water", "equipId", "treatmentId", "progress", "dosed", "fishIds"].forEach((k) => { delete log[k]; });   // 内容を変えたときに古い入力を残さない
       Object.assign(log, data);
     }
     toast("更新しました");
@@ -174,9 +191,15 @@ function saveLog() {
   if (!isOpen("dayOverlay")) openDay(data.date); else renderDay();
 }
 
-$("lTank").onchange = () => { fillTargets(null); updateActionFields(); const t = tankById($("lTank").value); if (t && t.wcPercent && !$("lPct").value) $("lPct").value = t.wcPercent; };
+$("lTank").onchange = () => { logFishSel = []; fillTargets(); updateActionFields(); const t = tankById($("lTank").value); if (t && t.wcPercent && !$("lPct").value) $("lPct").value = t.wcPercent; };
 $("lAction").onchange = updateActionFields;
-$("lTarget").onchange = updateTagKind;
+$("lTarget").onchange = () => { logFishSel = $("lTarget").value ? [$("lTarget").value] : []; updateTagKind(); };
+$("lTargetMulti").onchange = () => {
+  logFishSel = [...$("lTargetMulti").querySelectorAll("input:checked")].map((i) => i.value);
+  updateTagKind();
+};
+$("lTargetAll").onclick = () => { logFishSel = fishOfTank($("lTank").value).map((f) => f.id); syncTargetUi(); updateTagKind(); };
+$("lTargetNone").onclick = () => { logFishSel = []; syncTargetUi(); updateTagKind(); };
 $("lTags").onclick = (e) => {
   const b = e.target.closest("[data-tag]");
   if (!b) return;

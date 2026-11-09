@@ -61,7 +61,7 @@ function openTank(id, refresh) {
   // 写真（水槽の写真と、記録の写真）
   tankPhotos = [];
   if (t.photo) tankPhotos.push({ src: t.photo, cap: "水槽の写真" });
-  logs.forEach((l) => { if (l.photo) tankPhotos.push({ src: l.photo, cap: fmtSlash(l.date) + " ・ " + l.action + (l.fishId ? "（" + fishNameById(l.fishId) + "）" : "") }); });
+  logs.forEach((l) => { if (l.photo) tankPhotos.push({ src: l.photo, cap: fmtSlash(l.date) + " ・ " + l.action + (l.fishId ? "（" + logFishNames(l) + "）" : "") }); });
   const photoHtml = '<div class="section"><h3>写真</h3>' + galleryHtml(tankPhotos, "data-tphoto") + '</div>';
 
   // 記録（内容ごと）

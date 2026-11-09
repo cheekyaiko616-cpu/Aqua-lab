@@ -1,10 +1,11 @@
 "use strict";
 // ===== 下のタブの切り替えと、画面の描き直し（必要な画面だけ描く） =====
-const TITLES = { calendar: "カレンダー", tanks: "水槽", graph: "水質グラフ", settings: "設定" };
+const TITLES = { calendar: "カレンダー", tanks: "水槽", graph: "水質グラフ", shop: "買い物", settings: "設定" };
 const VIEW_RENDER = {
   calendar: () => { renderHero(); renderCalendar(); },
   tanks: () => renderTanks(),
   graph: () => renderGraph(),
+  shop: () => renderShop(),
   settings: () => renderSettings()
 };
 let currentView = "calendar";

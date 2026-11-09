@@ -26,6 +26,9 @@ function fishSpecies(f) {
 }
 // 呼び名があれば呼び名、なければ種類名
 function fishLabel(f) { return f.name || fishSpecies(f); }
+// 記録の対象の生体（複数のときは fishIds、1匹のときは fishId）
+function logFishIds(l) { return l.fishIds && l.fishIds.length ? l.fishIds : (l.fishId ? [l.fishId] : []); }
+function logFishNames(l) { return logFishIds(l).map(fishNameById).join("、"); }
 function fishNameById(id) { const f = fishById(id); return f ? fishLabel(f) : "（削除済み）"; }
 
 // ---- 記録から分かること（索引に覚えておき、データが変わったら作り直す） ----
@@ -72,7 +75,7 @@ function waterText(w) {
 }
 // 記録の「何に対して」：「60cm水槽」または「60cm水槽 / ネオンテトラ」
 function logTargetText(l) {
-  return tankName(l.tankId) + (l.fishId ? " / " + fishNameById(l.fishId) : "");
+  return tankName(l.tankId) + (l.fishId ? " / " + logFishNames(l) : "");
 }
 // これまでに使った餌・薬の名前（新しい順・重複なし）
 function pastItems(action) {

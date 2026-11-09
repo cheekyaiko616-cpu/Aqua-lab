@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/tanks.css">
 <link rel="stylesheet" href="css/forms.css">
 <link rel="stylesheet" href="css/care.css">
+<link rel="stylesheet" href="css/shop.css">
 <link rel="stylesheet" href="css/graph-settings.css">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Aqua-lab">
@@ -81,6 +82,20 @@
     <div class="g-detail" id="gDetail" aria-live="polite"></div>
   </section>
 
+  <!-- 買い物（Amazon・楽天で探す） -->
+  <section class="view" id="view-shop">
+    <div class="setting-group">
+      <h3>探したいもの</h3>
+      <input type="text" id="shopQ" maxlength="60" placeholder="例：外部フィルター ろ材" enterkeyhint="search" aria-label="探したいものの名前">
+      <div class="shop-btns">
+        <a class="shop-btn amazon" id="shopAmazon" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで探す</a>
+        <a class="shop-btn rakuten" id="shopRakuten" href="https://www.rakuten.co.jp/" target="_blank" rel="noopener">楽天で探す</a>
+      </div>
+      <div class="hint">アプリを入れている場合は、アプリが開きます。入っていない場合は、ブラウザで開きます。</div>
+    </div>
+    <div id="shopSuggest"></div>
+  </section>
+
   <!-- 設定 -->
   <section class="view" id="view-settings">
     <div class="setting-group">
@@ -121,6 +136,7 @@
   <button data-tab="calendar" class="active" aria-label="カレンダー" aria-current="page"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-calendar"/></svg></span></button>
   <button data-tab="tanks" aria-label="水槽一覧"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-tank"/></svg></span></button>
   <button data-tab="graph" aria-label="水質グラフ"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-chart"/></svg></span></button>
+  <button data-tab="shop" aria-label="買い物"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-cart"/></svg></span></button>
   <button data-tab="settings" aria-label="設定"><span class="ico"><svg class="tab-ic" aria-hidden="true"><use href="#i-gear"/></svg></span></button>
 </nav>
 
@@ -359,6 +375,11 @@
       <label for="lTarget">対象</label>
       <select id="lTarget"></select>
     </div>
+    <div id="lTargetMultiBox" style="display:none;">
+      <label id="lTargetMultiLabel">対象の生体（複数選べます。選ばなければ水槽全体）</label>
+      <div class="chk-list" id="lTargetMulti"></div>
+      <div class="multi-ops"><button type="button" class="link-btn" id="lTargetAll">全員を選ぶ</button><button type="button" class="link-btn" id="lTargetNone">選択を外す</button></div>
+    </div>
     <div class="act-box" id="lWcBox">
       <div class="size-row"><span>換水量</span><input type="number" id="lPct" min="1" max="100" inputmode="numeric" aria-label="換水量（パーセント）"><span>%</span></div>
     </div>
@@ -477,6 +498,7 @@
 <script src="js/features/log-edit.js"></script>
 <script src="js/features/graph.js"></script>
 <script src="js/features/tag-manager.js"></script>
+<script src="js/features/shop.js"></script>
 <script src="js/features/settings.js"></script>
 <script src="js/features/backup.js"></script>
 <script src="js/main.js"></script>

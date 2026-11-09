@@ -20,6 +20,7 @@
 /* チェック（記録画面・生体の選択） */
 label.chk { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 14px; color: var(--text); }
 label.chk input { width: 20px; height: 20px; flex-shrink: 0; margin: 0; accent-color: var(--accent); }
+.multi-ops { display: flex; gap: 16px; margin-top: 4px; font-size: 13px; }
 .chk-list { border: 1px solid var(--border); border-radius: 10px; padding: 2px 10px 8px; max-height: 128px; overflow-y: auto; background: var(--bg); }
 .chk-list label.chk { margin-top: 8px; }
 

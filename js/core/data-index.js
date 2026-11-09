@@ -19,7 +19,7 @@ function dataIndex() {
   state.logs.forEach((l) => {
     pushTo(byDate, l.date, l);
     pushTo(byTank, l.tankId, l);
-    if (l.fishId) pushTo(byFish, l.fishId, l);
+    logFishIds(l).forEach((id) => pushTo(byFish, id, l));
   });
   ix = {
     rev: dataRev, tRef: state.tanks, fRef: state.fish, lRef: state.logs,

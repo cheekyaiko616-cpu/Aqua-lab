@@ -76,7 +76,7 @@ function saveFishEdit() {
     const f = fishById(fishEditingId);
     if (f) {
       // 別の水槽へ移したときは、この生体の記録も新しい水槽に付け替える
-      if (f.tankId !== data.tankId) state.logs.forEach((l) => { if (l.fishId === f.id) l.tankId = data.tankId; });
+      if (f.tankId !== data.tankId) state.logs.forEach((l) => { if (l.fishId === f.id && !(l.fishIds && l.fishIds.length > 1)) l.tankId = data.tankId; });
       Object.assign(f, data);
     }
     toast("更新しました");

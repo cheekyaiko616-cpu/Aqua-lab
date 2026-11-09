@@ -1,0 +1,12 @@
+/* ===== 買い物タブ ===== */
+#view-shop .setting-group { margin-bottom: 14px; }
+.shop-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.shop-btn {
+  display: block; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px;
+  padding: 13px 14px; border-radius: 14px; color: #fff; border: 1px solid transparent; overflow-wrap: anywhere;
+}
+.shop-btn.amazon { background: #232f3e; color: #ffb74d; }
+.shop-btn.rakuten { background: #bf0000; }
+.shop-btn:active { opacity: .85; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .shop-btn.amazon { background: #2f3f52; } }
+:root[data-theme="dark"] .shop-btn.amazon { background: #2f3f52; }
