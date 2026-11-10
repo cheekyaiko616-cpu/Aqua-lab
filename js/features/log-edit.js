@@ -53,8 +53,22 @@ function updateActionFields() {
     $("lItemLabel").textContent = a === "給餌" ? "餌の名前" : "薬の名前";
     $("lAmount").placeholder = a === "給餌" ? "例：ひとつまみ" : "例：規定量";
     $("lItemList").innerHTML = pastItems(a).map((n) => '<option value="' + escapeHtml(n) + '">').join("");
+    prefillLastFeed(a);
   }
   updateTagKind();
+}
+// 新しい給餌の記録では、その水槽の前回の餌と量を最初から入れておく（自分で入力した内容は上書きしない）
+let logAutoItem = null;
+function prefillLastFeed(a) {
+  const mine = logAutoItem && $("lItem").value === logAutoItem.item && $("lAmount").value === logAutoItem.amount;
+  if (mine) { $("lItem").value = ""; $("lAmount").value = ""; }          // 前に自動で入れた分は、いったん消す
+  logAutoItem = null;
+  if (logEditId || a !== "給餌" || $("lItem").value || $("lAmount").value) return;
+  const tankId = $("lTank").value;
+  const last = state.logs.filter((l) => l.action === "給餌" && l.tankId === tankId && l.item).sort(byDateDesc)[0];
+  if (!last) return;
+  logAutoItem = { item: last.item, amount: last.amount || "" };
+  $("lItem").value = logAutoItem.item; $("lAmount").value = logAutoItem.amount;
 }
 // 機器・薬浴の選択肢（選んだ水槽のものだけ。編集中の記録のものは、使用をやめた・終わったものでも残す）
 function fillCareChoices() {
@@ -110,6 +124,7 @@ function openLog(o) {
   fillTargets();
   const t = tankById($("lTank").value);
   $("lPct").value = log ? (log.pct || "") : (t && t.wcPercent ? t.wcPercent : "");
+  logAutoItem = null;
   $("lItem").value = log && log.item ? log.item : "";
   $("lAmount").value = log && log.amount ? log.amount : "";
   WATER_KEYS.forEach((k) => {
@@ -187,7 +202,7 @@ function saveLog() {
   dayKey = data.date;
   afterChange();
   // 詳細や履歴から開いたときは、その画面に戻る。カレンダーから開いたときは日ごとの記録を出す
-  if (logFromHistory || isOpen("tankOverlay") || isOpen("fishOverlay")) return;
+  if (logFromHistory || isOpen("searchOverlay") || isOpen("tankOverlay") || isOpen("fishOverlay")) return;
   if (!isOpen("dayOverlay")) openDay(data.date); else renderDay();
 }
 

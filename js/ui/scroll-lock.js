@@ -25,6 +25,7 @@
     if (e.touches.length !== 1 || !e.cancelable) return;       // 2本指（拡大など）は触らない
     const dy = e.touches[0].clientY - startY;
     const dx = e.touches[0].clientX - startX;
+    if (e.target.closest && e.target.closest("select, input, textarea")) return;   // 入力部品のタップ・操作は邪魔しない
     if (Math.abs(dx) > Math.abs(dy)) return;                   // 横の動き（月の切り替え・戻るスワイプ）は邪魔しない
     if (!box) { e.preventDefault(); return; }                  // スクロールできない場所
     const atTop = box.scrollTop <= 0, atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 1;

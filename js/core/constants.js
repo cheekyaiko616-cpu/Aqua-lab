@@ -1,4 +1,5 @@
 "use strict";
+const BACKUP_REMIND_DAYS = 30;   // この日数バックアップしていないと、お知らせに出す
 // ===== 定数（保存名・記録の種類・水質の項目・写真サイズなど） =====
 const LS_KEY = "aquaLog.v1";        // IndexedDBが使えない場合の予備の保存名
 const DB_NAME = "aquaLog";

@@ -32,14 +32,19 @@ function renderHero() {
       rows.push({ t, text: "機器：" + equipName(e) + "の手入れ（" + equipDueText(es) + "）" });
     });
   });
+  // バックアップ：記録がたまっているのに、30日以上していないときに知らせる
+  const lastB = state.settings.lastBackup;
+  const backupDue = state.logs.length >= 10 && (!lastB || daysBetween(lastB, todayStr()) >= BACKUP_REMIND_DAYS);
+  if (backupDue) rows.push({ t: null, name: "バックアップ", text: lastB ? daysBetween(lastB, todayStr()) + "日していません（タップで設定へ）" : "まだしていません（タップで設定へ）" });
   const todayLogs = logsOnDate(todayStr()).length;
   setHtml($("heroBig"), wcCount > 0 ? svgIcon("bucket") + " 水換えのおすすめ：" + wcCount + "槽"
     : treatCount > 0 ? svgIcon("heal") + " 薬浴中：" + treatCount + "件"
     : equipCount > 0 ? svgIcon("wrench") + " 機器の手入れ時期：" + equipCount + "件"
-    : tempCount > 0 ? svgIcon("thermo") + " 水温を確認してください" : "今日の水換えはありません");
+    : tempCount > 0 ? svgIcon("thermo") + " 水温を確認してください"
+    : backupDue ? "バックアップをおすすめします" : "今日の水換えはありません");
   $("heroSmall").textContent = "今日の記録 " + todayLogs + "件" + (rows.length ? "（タップで一覧）" : "");
-  setHtml($("heroDetail"), rows.map(({ t, text }) =>
-    '<div class="item" style="padding:6px 0;" data-hero-tank="' + t.id + '"><span>' + escapeHtml(t.name) + '</span><small>' + escapeHtml(text) + '</small></div>').join(""));
+  setHtml($("heroDetail"), rows.map(({ t, name, text }) =>
+    '<div class="item" style="padding:6px 0;" ' + (t ? 'data-hero-tank="' + t.id + '"' : 'data-hero-backup="1"') + '><span>' + escapeHtml(t ? t.name : name) + '</span><small>' + escapeHtml(text) + '</small></div>').join(""));
   const open = heroOpen && rows.length > 0;
   $("heroDetail").style.display = open ? "block" : "none";
   $("hero").setAttribute("aria-expanded", rows.length ? String(open) : "false");
@@ -49,6 +54,7 @@ $("hero").onclick = (e) => {
   // 一覧の行をタップしたら、その水槽の詳細を開く
   const row = e.target.closest("[data-hero-tank]");
   if (row) { openTank(row.dataset.heroTank); return; }
+  if (e.target.closest("[data-hero-backup]")) { showTab("settings"); return; }
   heroOpen = !heroOpen;
   renderHero();
 };

@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="css/forms.css">
 <link rel="stylesheet" href="css/care.css">
 <link rel="stylesheet" href="css/shop.css">
+<link rel="stylesheet" href="css/search.css">
+<link rel="stylesheet" href="css/select-picker.css">
 <link rel="stylesheet" href="css/graph-settings.css">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Aqua-lab">
@@ -39,6 +41,7 @@
     <div class="cal-wrap">
       <div class="cal-head">
         <button class="secondary" id="prevM" type="button" aria-label="前の月">‹</button>
+        <button class="secondary search-open" id="searchOpen" type="button"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg> 記録を探す</button>
         <button class="secondary" id="nextM" type="button" aria-label="次の月">›</button>
       </div>
       <div class="weekdays">
@@ -170,6 +173,34 @@
     <h2 id="historyTitle"></h2>
     <div id="historyBody"></div>
     <div class="btns"><button class="secondary" id="historyClose">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 選択欄の選び方（プルダウンの代わりに、アプリ内の一覧で選ぶ） -->
+<div class="overlay" id="selOverlay" role="dialog" aria-modal="true" aria-labelledby="selTitle" style="z-index:40;">
+  <div class="sheet">
+    <h2 id="selTitle"></h2>
+    <div id="selList" role="listbox"></div>
+    <div class="btns"><button class="secondary" id="selCancel" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 記録を探す（キーワード・水槽・生体・内容・期間で絞り込み） -->
+<div class="overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchTitle" style="z-index:22;">
+  <div class="sheet">
+    <h2 id="searchTitle">記録を探す</h2>
+    <input type="search" id="sQ" placeholder="キーワード（メモ・餌・薬・タグなど）" aria-label="キーワード" autocomplete="off">
+    <div class="search-grid">
+      <select id="sTank" aria-label="水槽"></select>
+      <select id="sFish" aria-label="生体"></select>
+      <select id="sAction" aria-label="内容"></select>
+      <select id="sPeriod" aria-label="期間">
+        <option value="">すべての期間</option><option value="30">30日以内</option><option value="90">90日以内</option><option value="365">1年以内</option>
+      </select>
+    </div>
+    <div class="search-meta"><span id="sCount"></span><button class="link-btn" id="sReset" type="button">条件をクリア</button></div>
+    <div id="searchBody"></div>
+    <div class="btns"><button class="secondary" id="searchClose">閉じる</button></div>
   </div>
 </div>
 
@@ -476,6 +507,7 @@
 <script src="js/ui/toast.js"></script>
 <script src="js/ui/overlay.js"></script>
 <script src="js/ui/confirm.js"></script>
+<script src="js/ui/select-picker.js"></script>
 <script src="js/ui/gestures.js"></script>
 <script src="js/ui/scroll-lock.js"></script>
 <script src="js/ui/keyboard.js"></script>
@@ -493,6 +525,7 @@
 <script src="js/features/treatment.js"></script>
 <script src="js/features/fish-detail.js"></script>
 <script src="js/features/history.js"></script>
+<script src="js/features/search.js"></script>
 <script src="js/features/photo-view.js"></script>
 <script src="js/features/picker.js"></script>
 <script src="js/features/log-edit.js"></script>

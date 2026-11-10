@@ -53,7 +53,7 @@ function slideIn(el, delta) {
 });
 
 // ---- 画面の一番上で下へ引っ張ると閉じる（見る画面） ----
-["tankOverlay", "fishOverlay", "historyOverlay", "dayOverlay", "tankPickOverlay", "tagOverlay"].forEach((id) => {
+["tankOverlay", "fishOverlay", "historyOverlay", "dayOverlay", "tankPickOverlay", "tagOverlay", "searchOverlay", "selOverlay"].forEach((id) => {
   const sheet = $(id).querySelector(".sheet");
   const CLOSE_AT = 120;
   let sx = 0, sy = 0, atTop = false, pulling = false, pullY = 0, raf = 0, axis = "";

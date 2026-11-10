@@ -78,3 +78,24 @@ function careBadgeHtml(t) {
   const due = equipOfTank(t.id).filter((e) => equipStatus(e).due).length;
   return (tr ? '<span class="badge caution">薬浴中</span>' : '') + (due ? '<span class="badge caution">機器 ' + due + '件</span>' : '');
 }
+
+// カレンダー用：日付 → その日の「機器の手入れ」「薬浴」の予定（過ぎている予定は今日に出す）
+//   機器の手入れ日 / 薬浴の薬の追加・水換え日 / 薬浴の終了予定日
+function carePlanMap() {
+  const today = todayStr(), map = new Map();
+  state.tanks.forEach((t) => {
+    equipOfTank(t.id).forEach((e) => {
+      const s = equipStatus(e);
+      if (s.next) pushTo(map, s.next < today ? today : s.next, { t, icon: "wrench", text: equipName(e) + "の手入れ" });
+    });
+    treatOfTank(t.id, true).forEach((tr) => {
+      const s = treatStatus(tr);
+      if (s.next) pushTo(map, s.next < today ? today : s.next, { t, icon: "heal", text: treatLabel(tr) + "：薬の追加・水換え" });
+      if (tr.days && tr.startDate) {
+        const end = addDays(tr.startDate, tr.days - 1);
+        pushTo(map, end < today ? today : end, { t, icon: "heal", text: treatLabel(tr) + "：終了予定" });
+      }
+    });
+  });
+  return map;
+}

@@ -69,3 +69,5 @@
 #dayBody .tag-chip, #historyBody .tag-chip, #dayBody .measure, #historyBody .measure { margin-top: 5px; }
 #dayPlan:empty { display: none; }
 #dayPlan { margin-bottom: 4px; }
+.dot.plan.care { border-color: #e08a2c; }
+.cal-cell.today .dot.plan.care { border-color: #ffd9a8; }

@@ -1,0 +1,12 @@
+/* ===== 記録を探す ===== */
+.cal-head .search-open { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 12px; }
+.cal-head .search-open .ic { width: 1em; height: 1em; }
+#searchOverlay .sheet { display: flex; flex-direction: column; overflow: hidden; }
+#searchOverlay .sheet > * { flex-shrink: 0; }
+#searchOverlay #searchBody { flex: 1 1 auto; min-height: 80px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#searchOverlay input[type="search"] { width: 100%; box-sizing: border-box; }
+.search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.search-grid select { width: 100%; padding: 8px 10px; min-width: 0; }
+.search-meta { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+.search-hit .s-date { font-size: 12px; color: var(--muted); }
+.search-hit mark { background: #ffe58a; color: inherit; border-radius: 3px; padding: 0 1px; }

@@ -1,0 +1,10 @@
+/* ===== 選択欄の一覧（プルダウンの代わり） ===== */
+#selOverlay .sheet { display: flex; flex-direction: column; overflow: hidden; max-height: 80vh; }
+#selOverlay .sheet > * { flex-shrink: 0; }
+#selOverlay #selList { flex: 1 1 auto; min-height: 60px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.sel-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; box-sizing: border-box; padding: 14px 10px; border: none; border-bottom: 1px solid var(--border); background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; border-radius: 0; }
+.sel-opt:last-child { border-bottom: none; }
+.sel-opt.on { color: var(--accent); font-weight: 700; }
+.sel-opt .ck { width: 1.2em; text-align: center; visibility: hidden; }
+.sel-opt.on .ck { visibility: visible; }
+.sel-opt:disabled { opacity: .4; }

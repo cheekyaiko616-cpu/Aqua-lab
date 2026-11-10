@@ -28,6 +28,7 @@ function afterChange() {
   if (isOpen("tankOverlay") && tankDetailId) openTank(tankDetailId, true);
   if (isOpen("fishOverlay") && fishDetailId) openFish(fishDetailId, true);
   if (isOpen("historyOverlay")) refreshHistory();
+  if (isOpen("searchOverlay")) renderSearch();
   if (isOpen("dayOverlay") && dayKey) renderDay();
 }
 function refreshIfDayChanged() {

@@ -6,7 +6,7 @@
 //  ・閉じたら、開く前に触っていたボタンへフォーカスを戻す
 // mode: 省略＝下へ滑り落ちて閉じる／"right"＝右へ滑って閉じる／"instant"＝すぐ消す
 const OVERLAY_IDS = ["tankOverlay", "fishOverlay", "historyOverlay", "dayOverlay", "pickOverlay", "wheelOverlay",
-  "tankPickOverlay", "tankEditOverlay", "fishEditOverlay", "equipEditOverlay", "treatEditOverlay", "logOverlay", "photoOverlay", "tagOverlay"];
+  "tankPickOverlay", "tankEditOverlay", "fishEditOverlay", "equipEditOverlay", "treatEditOverlay", "logOverlay", "photoOverlay", "tagOverlay", "searchOverlay", "selOverlay"];
 const overlayStack = [];
 const overlayOpener = {};
 const overlayOnClose = {};   // 画面ごとの「閉じたときの後片付け」。各画面のファイルで登録する
@@ -98,6 +98,20 @@ function closeOverlay(id, mode) {
 }
 
 // 画面の外側（暗い部分）をタップすると閉じる
+// ただし、次の場合は閉じない（選択欄を閉じるためのタップが、うしろの暗い部分への「タップ」として届いてしまうため）
+//  ・選択欄（プルダウン・日付など）を開いている間、または閉じた直後
+//  ・暗い部分を押し始めた形跡がない（押し始めと離した場所が同じ暗い部分のときだけ閉じる）
+let lastPickAt = 0, downTarget = null, downAt = 0;
+const isPickField = (el) => !!el && (el.tagName === "SELECT" || (el.tagName === "INPUT" && /^(date|time|month|file)$/.test(el.type)));
+document.addEventListener("pointerdown", (e) => { downTarget = e.target; downAt = Date.now(); }, true);
+document.addEventListener("focusin", (e) => { if (isPickField(e.target)) lastPickAt = Date.now(); }, true);
+document.addEventListener("focusout", (e) => { if (isPickField(e.target)) lastPickAt = Date.now(); }, true);
+document.addEventListener("change", (e) => { if (isPickField(e.target)) lastPickAt = Date.now(); }, true);
 OVERLAY_IDS.forEach((id) => {
-  $(id).addEventListener("click", (e) => { if (e.target.id === id) closeOverlay(id); });
+  $(id).addEventListener("click", (e) => {
+    if (e.target.id !== id) return;
+    if (isPickField(document.activeElement) || Date.now() - lastPickAt < 600) return;
+    if (downTarget !== e.target || Date.now() - downAt > 1500) return;
+    closeOverlay(id);
+  });
 });

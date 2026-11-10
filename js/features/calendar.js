@@ -6,7 +6,7 @@ function fillMonthPick() {
   $("pickMonth").textContent = (viewMonth + 1) + "月";
 }
 // 1日分のマス。other=true は前の月・次の月の日（薄く表示。押すとその月に切り替わる）
-function calCellHtml(y, m, d, today, plan, other) {
+function calCellHtml(y, m, d, today, plan, care, other) {
   const key = ymd(y, m, d);
   const wd = new Date(y, m, d).getDay();
   const cls = ["cal-cell"];
@@ -18,11 +18,13 @@ function calCellHtml(y, m, d, today, plan, other) {
   const logs = logsOnDate(key).slice().sort((a, b) => ACTIONS.indexOf(a.action) - ACTIONS.indexOf(b.action));
   let dotHtml = "";
   const planned = plan.get(key);
+  const cared = care.get(key);
   if (planned) dotHtml += '<span class="dot plan"></span>';
+  if (cared) dotHtml += '<span class="dot plan care"></span>';
   logs.slice(0, 3).forEach((l) => { dotHtml += '<span class="dot" style="background:' + (ACTION_STYLE[l.action] || ACTION_STYLE["その他"]).dot + '"></span>'; });
   if (logs.length > 3) dotHtml += '<span class="plus">+</span>';
   const label = (other ? "前後の月の日：" : "") + (m + 1) + "月" + d + "日（" + WD[wd] + "）" + (key === today ? "、今日" : "") +
-    (logs.length ? "、記録" + logs.length + "件" : "") + (planned ? "、水換え予定" + planned.length + "槽" : "") + (other ? "、押すとその月を表示" : "");
+    (logs.length ? "、記録" + logs.length + "件" : "") + (planned ? "、水換え予定" + planned.length + "槽" : "") + (cared ? "、手入れ・薬浴の予定" + cared.length + "件" : "") + (other ? "、押すとその月を表示" : "");
   return '<button class="' + cls.join(" ") + '" data-date="' + key + '"' + (other ? ' data-other="1"' : '') + ' aria-label="' + label + '">' +
     '<span class="num">' + d + '</span><span class="dots">' + dotHtml + '</span></button>';
 }
@@ -31,23 +33,23 @@ function renderCalendar() {
   const first = new Date(viewYear, viewMonth, 1).getDay();
   const days = new Date(viewYear, viewMonth + 1, 0).getDate();
   const today = todayStr();
-  const plan = wcPlanMap();
+  const plan = wcPlanMap(), care = carePlanMap();
   let html = "";
   // 1日の前の空き：前の月の日を並べる
   const prev = new Date(viewYear, viewMonth, 0);               // 前の月の最後の日
-  for (let i = first - 1; i >= 0; i--) html += calCellHtml(prev.getFullYear(), prev.getMonth(), prev.getDate() - i, today, plan, true);
-  for (let d = 1; d <= days; d++) html += calCellHtml(viewYear, viewMonth, d, today, plan, false);
+  for (let i = first - 1; i >= 0; i--) html += calCellHtml(prev.getFullYear(), prev.getMonth(), prev.getDate() - i, today, plan, care, true);
+  for (let d = 1; d <= days; d++) html += calCellHtml(viewYear, viewMonth, d, today, plan, care, false);
   // 月末のあとの空き：次の月の日を並べる（最後の週を埋めるところまで）
   const rest = (7 - ((first + days) % 7)) % 7;
   const next = new Date(viewYear, viewMonth + 1, 1);
-  for (let d = 1; d <= rest; d++) html += calCellHtml(next.getFullYear(), next.getMonth(), d, today, plan, true);
+  for (let d = 1; d <= rest; d++) html += calCellHtml(next.getFullYear(), next.getMonth(), d, today, plan, care, true);
   setHtml($("calGrid"), html);
 }
 // 点の色の見本
 function renderLegend() {
   const shown = ["水換え", "給餌", "投薬", "水質測定"];
   $("calLegend").innerHTML = shown.map((a) => '<span><span class="dot" style="background:' + ACTION_STYLE[a].dot + '"></span>' + a + '</span>').join("") +
-    '<span><span class="dot plan"></span>水換え予定</span>';
+    '<span><span class="dot plan"></span>水換え予定</span><span><span class="dot plan care"></span>手入れ・薬浴の予定</span>';
 }
 function moveMonth(delta) {
   const d = new Date(viewYear, viewMonth + delta, 1);

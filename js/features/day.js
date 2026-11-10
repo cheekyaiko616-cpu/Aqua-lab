@@ -12,6 +12,10 @@ function renderDay() {
   const planned = wcPlanMap().get(dayKey) || [];
   setHtml($("dayPlan"), planned.length
     ? '<div class="notice ok">' + svgIcon("bucket") + ' 水換え予定：' + planned.map((t) => escapeHtml(t.name)).join("、") + '</div>' : "");
+  // その日の機器の手入れ・薬浴の予定
+  const cared = carePlanMap().get(dayKey) || [];
+  if (cared.length) $("dayPlan").insertAdjacentHTML("beforeend", '<div class="notice caution">' + cared.map((c) =>
+    svgIcon(c.icon) + ' ' + escapeHtml(c.t.name) + '：' + escapeHtml(c.text)).join("<br>") + '</div>');
   const list = logsOnDate(dayKey);
   setHtml($("dayBody"), list.length
     ? list.map((l) => {

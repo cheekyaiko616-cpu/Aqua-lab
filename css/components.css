@@ -21,7 +21,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* 入力欄 */
 label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
-input[type="text"], input[type="date"], input[type="number"], select, textarea {
+input[type="text"], input[type="search"], input[type="date"], input[type="number"], select, textarea {
   width: 100%; padding: 10px; border-radius: 10px;
   border: 1px solid var(--border); background: var(--bg); color: var(--text);
 }
