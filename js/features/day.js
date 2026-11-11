@@ -10,12 +10,12 @@ function renderDay() {
   $("dayTitle").textContent = fmtDateKey(dayKey);
   // その日に水換え予定の水槽
   const planned = wcPlanMap().get(dayKey) || [];
-  setHtml($("dayPlan"), planned.length
-    ? '<div class="notice ok">' + svgIcon("bucket") + ' 水換え予定：' + planned.map((t) => escapeHtml(t.name)).join("、") + '</div>' : "");
-  // その日の機器の手入れ・薬浴の予定
+  // 機器の手入れ・薬浴の予定も、まとめて1回で描く（あとから付け足すと、開くたびに増えてしまう）
   const cared = carePlanMap().get(dayKey) || [];
-  if (cared.length) $("dayPlan").insertAdjacentHTML("beforeend", '<div class="notice caution">' + cared.map((c) =>
-    svgIcon(c.icon) + ' ' + escapeHtml(c.t.name) + '：' + escapeHtml(c.text)).join("<br>") + '</div>');
+  setHtml($("dayPlan"),
+    (planned.length ? '<div class="notice ok">' + svgIcon("bucket") + ' 水換え予定：' + planned.map((t) => escapeHtml(t.name)).join("、") + '</div>' : "") +
+    (cared.length ? '<div class="notice caution">' + cared.map((c) =>
+      svgIcon(c.icon) + ' ' + escapeHtml(c.t.name) + '：' + escapeHtml(c.text)).join("<br>") + '</div>' : ""));
   const list = logsOnDate(dayKey);
   setHtml($("dayBody"), list.length
     ? list.map((l) => {

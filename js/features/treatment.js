@@ -74,7 +74,7 @@ function openTreatEdit(tr, presetTankId, ending) {
   $("trTank").value = tr ? tr.tankId : (presetTankId || state.tanks[0].id);
   fillTreatFish($("trTank").value, tr ? tr.fishIds || [] : []);
   $("trReasonList").innerHTML = TREAT_REASONS.map((x) => '<option value="' + escapeHtml(x) + '">').join("");
-  const drugs = pastItems("投薬").concat(state.treatments.map((x) => x.drug).filter(Boolean)).concat(TREAT_DRUGS);
+  const drugs = pastItems("薬浴").concat(pastItems("投薬")).concat(state.treatments.map((x) => x.drug).filter(Boolean)).concat(TREAT_DRUGS);
   $("trDrugList").innerHTML = [...new Set(drugs)].slice(0, 40).map((x) => '<option value="' + escapeHtml(x) + '">').join("");
   $("trReason").value = tr ? tr.reason || "" : "";
   $("trDrug").value = tr ? tr.drug || "" : "";

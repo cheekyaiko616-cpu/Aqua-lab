@@ -29,7 +29,7 @@ function fillTargets() {
 }
 function syncTargetUi() {
   const a = $("lAction").value;
-  if (a !== "給餌" && logFishSel.length > 1) logFishSel = [logFishSel[0]];   // 給餌以外は1匹まで
+  if (a !== "給餌" && a !== "薬浴" && logFishSel.length > 1) logFishSel = [logFishSel[0]];   // 給餌以外は1匹まで
   $("lTarget").value = logFishSel[0] || "";
   $("lTargetMulti").querySelectorAll("input").forEach((i) => { i.checked = logFishSel.includes(i.value); });
 }
@@ -37,8 +37,8 @@ function syncTargetUi() {
 function updateActionFields() {
   const a = $("lAction").value;
   const hasFish = fishOfTank($("lTank").value).length > 0;
-  const multi = a === "給餌" && hasFish;                                   // 給餌：複数の生体を選べる
-  const single = FISH_ACTIONS.includes(a) && a !== "給餌" && hasFish;       // 投薬・様子メモなど：1匹まで
+  const multi = (a === "給餌" || a === "薬浴") && hasFish;                 // 給餌・薬浴：複数の生体を選べる
+  const single = (FISH_ACTIONS.includes(a) || a === "投薬") && a !== "給餌" && a !== "薬浴" && hasFish;   // 様子メモなど：1匹まで
   $("lTargetBox").style.display = single ? "" : "none";
   $("lTargetMultiBox").style.display = multi ? "" : "none";
   if (!single && !multi) logFishSel = [];
@@ -49,6 +49,7 @@ function updateActionFields() {
   $("lEquipBox").classList.toggle("show", a === "機器の手入れ");
   $("lTreatBox").classList.toggle("show", a === "薬浴");
   if (a === "機器の手入れ" || a === "薬浴") fillCareChoices();
+  if (a === "薬浴") syncTreatNew();
   if (a === "給餌" || a === "投薬") {
     $("lItemLabel").textContent = a === "給餌" ? "餌の名前" : "薬の名前";
     $("lAmount").placeholder = a === "給餌" ? "例：ひとつまみ" : "例：規定量";
@@ -80,11 +81,21 @@ function fillCareChoices() {
     : '<option value="">この水槽には機器が登録されていません</option>';
   if (wantE && eq.some((e) => e.id === wantE)) $("lEquip").value = wantE;
   const tr = treatOfTank(tankId, true).concat(wantT && !treatOfTank(tankId, true).some((t) => t.id === wantT) && treatById(wantT) ? [treatById(wantT)] : []);
-  $("lTreat").innerHTML = tr.length
-    ? tr.map((t) => '<option value="' + t.id + '">' + escapeHtml(treatLabel(t) + "（" + treatTargetText(t) + "）") + '</option>').join("")
-    : '<option value="">この水槽には薬浴中のものがありません</option>';
-  if (wantT && tr.some((t) => t.id === wantT)) $("lTreat").value = wantT;
+  const keepT = $("lTreat").value;
+  $("lTreat").innerHTML = (logEditId ? "" : '<option value="">新しく薬浴を始める</option>') +
+    tr.map((t) => '<option value="' + t.id + '">' + escapeHtml(treatLabel(t) + "（" + treatTargetText(t) + "）" + (t.status === "done" ? "・終了" : "")) + '</option>').join("");
+  const want = wantT || keepT;
+  if (want && tr.some((t) => t.id === want)) $("lTreat").value = want;
+  const drugs = [...new Set(pastItems("薬浴").concat(pastItems("投薬"), state.treatments.map((x) => x.drug).filter(Boolean), TREAT_DRUGS))].slice(0, 40);
+  $("lTrDrugList").innerHTML = drugs.map((x) => '<option value="' + escapeHtml(x) + '">').join("");
+  $("lTrReasonList").innerHTML = TREAT_REASONS.map((x) => '<option value="' + escapeHtml(x) + '">').join("");
   delete $("lEquip").dataset.want; delete $("lTreat").dataset.want;
+}
+// 薬浴：「新しく始める」ときは薬・期間の入力欄を、すでにある薬浴のときは経過の欄を出す
+function syncTreatNew() {
+  const isNew = !$("lTreat").value;
+  $("lTreatNew").style.display = isNew ? "" : "none";
+  $("lTreatOld").style.display = isNew ? "none" : "";
 }
 // 状態タグは、対象が生体なら「生体用」、それ以外は「水槽用」
 function updateTagKind() {
@@ -118,7 +129,7 @@ function openLog(o) {
   setLogDate(o.date || todayStr());
   $("lTank").innerHTML = state.tanks.map((t) => '<option value="' + t.id + '">' + escapeHtml(t.name) + '</option>').join("");
   $("lTank").value = log ? log.tankId : (o.tankId || state.tanks[0].id);
-  $("lAction").innerHTML = ACTIONS.map((a) => '<option value="' + a + '">' + a + '</option>').join("");
+  $("lAction").innerHTML = ACTIONS.concat(log && !ACTIONS.includes(log.action) ? [log.action] : []).map((a) => '<option value="' + a + '">' + a + '</option>').join("");
   $("lAction").value = log ? log.action : (o.action || "給餌");
   logFishSel = log ? logFishIds(log).slice() : (o.fishId ? [o.fishId] : []);
   fillTargets();
@@ -136,6 +147,9 @@ function openLog(o) {
   $("lProgress").innerHTML = '<option value="">選ばない</option>' + TREAT_PROGRESS.map((p) => '<option value="' + p + '">' + p + '</option>').join("");
   $("lProgress").value = log ? log.progress || "" : "変わらない";
   $("lDosed").checked = !!(log && log.dosed);
+  ["lTrDrug", "lTrReason", "lTrDays", "lTrEvery"].forEach((id) => { $(id).value = ""; });
+  $("lTrDays").value = log ? "" : "7"; $("lTrEvery").value = log ? "" : "3";
+  $("lTreat").innerHTML = "";
   $("lMemo").value = log ? log.memo || "" : "";
   $("lPhoto").value = "";
   setLogPhoto(log && log.photo ? log.photo : null);
@@ -169,11 +183,24 @@ function saveLog() {
     if (!$("lEquip").value) { toast("先に、水槽の詳細から機器を登録してください"); return; }
     data.equipId = $("lEquip").value;
   }
+  let newTreat = null;
   if (action === "薬浴") {
-    if (!$("lTreat").value) { toast("先に、水槽の詳細から薬浴を始めてください"); return; }
-    data.treatmentId = $("lTreat").value;
-    if ($("lProgress").value) data.progress = $("lProgress").value;
-    if ($("lDosed").checked) data.dosed = true;
+    if ($("lTreat").value) {
+      data.treatmentId = $("lTreat").value;
+      if ($("lProgress").value) data.progress = $("lProgress").value;
+      if ($("lDosed").checked) data.dosed = true;
+    } else {
+      // 新しく薬浴を始める：薬浴を作り、その1日目の記録として残す
+      const days = readNum("lTrDays", 1, 365, true), every = readNum("lTrEvery", 1, 60, true);
+      if (!days.ok) { toast("期間は1〜365日の数字で入力してください"); return; }
+      if (!every.ok) { toast("薬の追加・水換えの間隔は1〜60日の数字で入力してください"); return; }
+      const drug = $("lTrDrug").value.trim(), reason = $("lTrReason").value.trim();
+      if (!drug && !reason) { toast("薬・処置か、症状・目的を入力してください"); return; }
+      newTreat = { id: uid(), createdAt: todayStr(), tankId, fishIds: logFishSel.slice(), reason, drug, dose: "", startDate: data.date,
+        days: days.value, every: every.value, memo: "", status: "active", endDate: null, result: "" };
+      data.treatmentId = newTreat.id; data.dosed = true;
+      if (drug) data.item = drug;
+    }
   }
   if (action === "水質測定") {
     const w = {};
@@ -185,6 +212,7 @@ function saveLog() {
     if (!Object.keys(w).length) { toast("測った値を1つ以上入れてください"); return; }
     data.water = w;
   }
+  if (newTreat) state.treatments.push(newTreat);
   if (logEditId) {
     const log = state.logs.find((x) => x.id === logEditId);
     if (log) {
@@ -194,7 +222,7 @@ function saveLog() {
     toast("更新しました");
   } else {
     state.logs.push(Object.assign({ id: uid() }, data));
-    toast("記録しました");
+    toast(newTreat ? "薬浴を始めました" : "記録しました");
   }
   if (!save()) return;
   closeOverlay("logOverlay");
@@ -208,6 +236,7 @@ function saveLog() {
 
 $("lTank").onchange = () => { logFishSel = []; fillTargets(); updateActionFields(); const t = tankById($("lTank").value); if (t && t.wcPercent && !$("lPct").value) $("lPct").value = t.wcPercent; };
 $("lAction").onchange = updateActionFields;
+$("lTreat").onchange = syncTreatNew;
 $("lTarget").onchange = () => { logFishSel = $("lTarget").value ? [$("lTarget").value] : []; updateTagKind(); };
 $("lTargetMulti").onchange = () => {
   logFishSel = [...$("lTargetMulti").querySelectorAll("input:checked")].map((i) => i.value);

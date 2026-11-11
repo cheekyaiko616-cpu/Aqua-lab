@@ -27,7 +27,7 @@ function fillSearchFish() {
 }
 function openSearch() {
   if (!$("sAction").options.length) {
-    $("sAction").innerHTML = '<option value="">すべての内容</option>' + ACTIONS.map((a) => '<option value="' + a + '">' + a + '</option>').join("");
+    $("sAction").innerHTML = '<option value="">すべての内容</option>' + ACTIONS.concat(LEGACY_ACTIONS).map((a) => '<option value="' + a + '">' + a + '</option>').join("");
   }
   fillSearchTank();
   renderSearch();

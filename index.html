@@ -427,9 +427,22 @@
     <div class="act-box" id="lTreatBox">
       <label for="lTreat">薬浴</label>
       <select id="lTreat"></select>
-      <label for="lProgress">魚の経過</label>
-      <select id="lProgress"></select>
-      <label class="chk"><input type="checkbox" id="lDosed"> 今日、薬の追加・水換えをした</label>
+      <div id="lTreatNew">
+        <div class="two">
+          <div><label for="lTrDrug">薬・処置</label><input type="text" id="lTrDrug" maxlength="30" list="lTrDrugList" placeholder="例：グリーンF"><datalist id="lTrDrugList"></datalist></div>
+          <div><label for="lTrReason">症状・目的</label><input type="text" id="lTrReason" maxlength="30" list="lTrReasonList" placeholder="例：白点病"><datalist id="lTrReasonList"></datalist></div>
+        </div>
+        <div class="two">
+          <div><label for="lTrDays">期間（日数）</label><input type="number" id="lTrDays" inputmode="numeric" min="1" max="365" placeholder="例：7"></div>
+          <div><label for="lTrEvery">薬の追加・水換え（日おき）</label><input type="number" id="lTrEvery" inputmode="numeric" min="1" max="60" placeholder="例：3"></div>
+        </div>
+        <div class="hint">この日から薬浴を始めます。期間が終わる日や、次の薬の追加・水換えの日がカレンダーに出ます。</div>
+      </div>
+      <div id="lTreatOld">
+        <label for="lProgress">魚の経過</label>
+        <select id="lProgress"></select>
+        <label class="chk"><input type="checkbox" id="lDosed"> 今日、薬の追加・水換えをした</label>
+      </div>
     </div>
     <div class="act-box" id="lWaterBox"><div class="water-grid" id="lWaterGrid"></div></div>
     <label for="lMemo">メモ</label>

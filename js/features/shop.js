@@ -25,7 +25,7 @@ const uniq = (a) => [...new Set(a.filter(Boolean))];
 function renderShop() {
   const equip = uniq(state.equipment.filter((e) => !e.retired).map((e) => e.name || e.kind));
   const foods = pastItems("給餌").slice(0, 12);
-  const drugs = uniq(pastItems("投薬").concat(state.treatments.map((t) => t.drug))).slice(0, 12);
+  const drugs = uniq(pastItems("薬浴").concat(pastItems("投薬")).concat(state.treatments.map((t) => t.drug))).slice(0, 12);
   const html = shopChips("使っている機器", equip) + shopChips("使った餌", foods) + shopChips("使った薬", drugs);
   setHtml($("shopSuggest"), html || '<div class="hint">機器を登録したり、餌・薬を記録したりすると、ここに名前が並びます。</div>');
   updateShopLinks();
