@@ -79,9 +79,16 @@ function logTargetText(l) {
 }
 // これまでに使った餌・薬の名前（新しい順・重複なし）
 function pastItems(action) {
-  const seen = new Set(), out = [];
+  const x = dataIndex();
+  if (!x.past) x.past = new Map();
+  let out = x.past.get(action);
+  if (out) return out;
+  const seen = new Set();
+  out = [];
   state.logs.slice().sort(byDateDesc).forEach((l) => {
     if (l.action === action && l.item && !seen.has(l.item)) { seen.add(l.item); out.push(l.item); }
   });
-  return out.slice(0, 30);
+  out = out.slice(0, 30);
+  x.past.set(action, out);   // 読み取り専用（呼び出し側は concat/map で新しい配列を作って使う）
+  return out;
 }

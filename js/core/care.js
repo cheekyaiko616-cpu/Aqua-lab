@@ -2,6 +2,18 @@
 // ===== 機器・薬浴の計算（次の手入れ日・薬浴の何日目か・今の経過など） =====
 // 機器の「最後に手入れした日」と、薬浴の「経過」は、記録（logs）から求める。
 
+// 機器・薬浴ごとの記録の表（データが変わったときだけ作り直す。画面を描くたびに全記録を調べ直さないため）
+function careIndex() {
+  const x = dataIndex();
+  if (x.care) return x.care;
+  const equipLast = new Map(), byTreat = new Map();
+  state.logs.forEach((l) => {
+    if (l.equipId) { const b = equipLast.get(l.equipId); if (!b || l.date >= b.date) equipLast.set(l.equipId, l); }
+    if (l.treatmentId) pushTo(byTreat, l.treatmentId, l);
+  });
+  return (x.care = { equipLast, byTreat, treatSorted: new Map() });
+}
+
 // ---- 機器 ----
 function equipById(id) { return state.equipment.find((e) => e.id === id) || null; }
 function equipOfTank(tankId, withRetired) {
@@ -10,9 +22,7 @@ function equipOfTank(tankId, withRetired) {
 function equipName(e) { return e.name || e.kind; }
 function equipNameById(id) { const e = equipById(id); return e ? equipName(e) : "（削除済み）"; }
 function lastEquipLog(equipId) {
-  let best = null;
-  state.logs.forEach((l) => { if (l.equipId === equipId && (!best || l.date >= best.date)) best = l; });
-  return best;
+  return careIndex().equipLast.get(equipId) || null;
 }
 // 手入れの状況： last=最後に手入れした日 / next=次の予定日 / diff=予定日まで（負なら超過） / due=今日以前
 function equipStatus(e) {
@@ -44,7 +54,10 @@ function treatTargetText(t) {
 }
 function treatLabel(t) { return [t.reason, t.drug].filter(Boolean).join(" ・ ") || "薬浴"; }
 function treatLogs(treatId) {
-  return state.logs.filter((l) => l.treatmentId === treatId).sort(byDateDesc);
+  const c = careIndex();
+  let a = c.treatSorted.get(treatId);
+  if (!a) { a = (c.byTreat.get(treatId) || NO_LIST).slice().sort(byDateDesc); c.treatSorted.set(treatId, a); }
+  return a;
 }
 // 薬浴の状況： day=何日目 / days=予定日数 / over=予定日数を過ぎた / progress=最新の経過 / next=次の薬の追加・水換え予定日
 function treatStatus(t) {
@@ -58,12 +71,11 @@ function treatStatus(t) {
   //  （投薬は、水槽全体、またはこの薬浴の生体への記録のとき）
   let doseDate = null;
   const fishIds = t.fishIds || [];
-  state.logs.forEach((l) => {
-    if (l.date > today || (t.startDate && l.date < t.startDate)) return;
-    const hit = (l.treatmentId === t.id && l.dosed) ||
-      (l.tankId === t.tankId && l.action === "水換え") ||
-      (l.tankId === t.tankId && l.action === "投薬" && (!fishIds.length || !logFishIds(l).length || logFishIds(l).some((id) => fishIds.includes(id))));
-    if (hit && (!doseDate || l.date > doseDate)) doseDate = l.date;
+  const consider = (l) => { if (l.date <= today && !(t.startDate && l.date < t.startDate) && (!doseDate || l.date > doseDate)) doseDate = l.date; };
+  logs.forEach((l) => { if (l.dosed) consider(l); });
+  logsOfTank(t.tankId).forEach((l) => {
+    if (l.action === "水換え" ||
+      (l.action === "投薬" && (!fishIds.length || !logFishIds(l).length || logFishIds(l).some((id) => fishIds.includes(id))))) consider(l);
   });
   const lastDose = doseDate ? { date: doseDate } : null;
   const doseBase = lastDose ? lastDose.date : (t.startDate || null);   // 始めた日に、1回目の薬を入れたとみなす

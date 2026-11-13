@@ -4,6 +4,13 @@ const SEARCH_MAX = 200;   // 一度に出す件数の上限
 
 // 記録の中で、キーワードで探す文字（メモ・餌や薬・タグ・水槽や生体の名前・機器・薬浴など）
 function logSearchText(l) {
+  const x = dataIndex();
+  if (!x.stext) x.stext = new Map();
+  let s = x.stext.get(l);
+  if (s === undefined) { s = buildSearchText(l); x.stext.set(l, s); }
+  return s;
+}
+function buildSearchText(l) {
   const parts = [l.action, l.memo, l.item, l.amount, (l.tags || []).join(" "), tankName(l.tankId), logFishNames(l)];
   if (l.equipId) parts.push(equipNameById(l.equipId));
   if (l.treatmentId) parts.push(treatLogText(l));

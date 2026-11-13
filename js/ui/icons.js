@@ -20,7 +20,6 @@
     snail: '<path d="M3 41c0-3 2-5 5-5h27c3 0 5-2 6-5l4 1c-1 6-5 9-10 9z"/><circle cx="21" cy="23" r="12" ' + S + ' stroke-width="3"/><path d="M21 23a3 3 0 1 1 3 3 6 6 0 1 1-6-6 9 9 0 1 1 9 9" ' + S + ' stroke-width="2.4"/><path d="M40 31l2-8M43 32l4-6" ' + S + ' stroke-width="2"/>',
     bubbles: '<circle cx="17" cy="30" r="9" ' + S + ' stroke-width="3"/><circle cx="32" cy="15" r="6" ' + S + ' stroke-width="3"/><circle cx="35" cy="35" r="4" ' + S + ' stroke-width="3"/><circle cx="13" cy="11" r="3" ' + S + ' stroke-width="3"/>',
     // 記録の種類
-    drop: '<path d="M24 4c7 10 13 17.5 13 25.5a13 13 0 0 1-26 0C11 21.5 17 14 24 4z"/>',
     bucket: '<path d="M9 17h30l-3.2 24.5A3 3 0 0 1 32.8 44H15.2a3 3 0 0 1-3-2.5z"/><path d="M11 17c0-8 6-12 13-12s13 4 13 12" ' + S + ' stroke-width="2.6"/>',
     food: '<rect x="13" y="4" width="22" height="7" rx="2"/><path d="M12 13h24v20a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4z"/><circle cx="17" cy="42" r="2.2"/><circle cx="25" cy="44" r="2"/><circle cx="32" cy="41.5" r="2.2"/>',
     pill: '<g transform="rotate(-45 24 24)"><path d="M24 15H15a9 9 0 0 0 0 18h9z"/><path d="M24 16.5h9a7.5 7.5 0 0 1 0 15h-9z" ' + S + ' stroke-width="3"/></g>',
