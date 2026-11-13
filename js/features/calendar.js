@@ -47,7 +47,7 @@ function renderCalendar() {
 }
 // 点の色の見本
 function renderLegend() {
-  const shown = ["水換え", "給餌", "薬浴", "水質測定"];
+  const shown = ["水換え", "給餌", "薬浴", "塩浴", "水質測定"];
   $("calLegend").innerHTML = shown.map((a) => '<span><span class="dot" style="background:' + ACTION_STYLE[a].dot + '"></span>' + a + '</span>').join("") +
     '<span><span class="dot plan"></span>水換え予定</span><span><span class="dot plan care"></span>手入れ・薬浴の予定</span>';
 }

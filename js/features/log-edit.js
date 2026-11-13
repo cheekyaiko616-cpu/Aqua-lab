@@ -29,7 +29,7 @@ function fillTargets() {
 }
 function syncTargetUi() {
   const a = $("lAction").value;
-  if (a !== "給餌" && a !== "薬浴" && logFishSel.length > 1) logFishSel = [logFishSel[0]];   // 給餌以外は1匹まで
+  if (a !== "給餌" && !BATH_ACTIONS.includes(a) && logFishSel.length > 1) logFishSel = [logFishSel[0]];   // 給餌以外は1匹まで
   $("lTarget").value = logFishSel[0] || "";
   $("lTargetMulti").querySelectorAll("input").forEach((i) => { i.checked = logFishSel.includes(i.value); });
 }
@@ -37,8 +37,8 @@ function syncTargetUi() {
 function updateActionFields() {
   const a = $("lAction").value;
   const hasFish = fishOfTank($("lTank").value).length > 0;
-  const multi = (a === "給餌" || a === "薬浴") && hasFish;                 // 給餌・薬浴：複数の生体を選べる
-  const single = (FISH_ACTIONS.includes(a) || a === "投薬") && a !== "給餌" && a !== "薬浴" && hasFish;   // 様子メモなど：1匹まで
+  const multi = (a === "給餌" || BATH_ACTIONS.includes(a)) && hasFish;                 // 給餌・薬浴：複数の生体を選べる
+  const single = (FISH_ACTIONS.includes(a) || a === "投薬") && a !== "給餌" && !BATH_ACTIONS.includes(a) && hasFish;   // 様子メモなど：1匹まで
   $("lTargetBox").style.display = single ? "" : "none";
   $("lTargetMultiBox").style.display = multi ? "" : "none";
   if (!single && !multi) logFishSel = [];
@@ -47,9 +47,10 @@ function updateActionFields() {
   $("lItemBox").classList.toggle("show", a === "給餌" || a === "投薬");
   $("lWaterBox").classList.toggle("show", a === "水質測定");
   $("lEquipBox").classList.toggle("show", a === "機器の手入れ");
-  $("lTreatBox").classList.toggle("show", a === "薬浴");
-  if (a === "機器の手入れ" || a === "薬浴") fillCareChoices();
-  if (a === "薬浴") syncTreatNew();
+  $("lTreatBox").classList.toggle("show", BATH_ACTIONS.includes(a));
+  if (a === "機器の手入れ" || BATH_ACTIONS.includes(a)) fillCareChoices();
+  if (BATH_ACTIONS.includes(a)) { syncBathWords(a); syncTreatNew(); }
+  syncSaltCalc();
   if (a === "給餌" || a === "投薬") {
     $("lItemLabel").textContent = a === "給餌" ? "餌の名前" : "薬の名前";
     $("lAmount").placeholder = a === "給餌" ? "例：ひとつまみ" : "例：規定量";
@@ -80,18 +81,43 @@ function fillCareChoices() {
     ? eq.map((e) => '<option value="' + e.id + '">' + escapeHtml(equipName(e) + (e.name ? "（" + e.kind + "）" : "")) + '</option>').join("")
     : '<option value="">この水槽には機器が登録されていません</option>';
   if (wantE && eq.some((e) => e.id === wantE)) $("lEquip").value = wantE;
-  const tr = treatOfTank(tankId, true).concat(wantT && !treatOfTank(tankId, true).some((t) => t.id === wantT) && treatById(wantT) ? [treatById(wantT)] : []);
+  const bath = $("lAction").value;                                    // 薬浴か塩浴か（選んだ種類のものだけ並べる）
+  const ofKind = (t) => !BATH_ACTIONS.includes(bath) || treatKind(t) === bath;
+  const tr = treatOfTank(tankId, true).filter(ofKind).concat(wantT && !treatOfTank(tankId, true).some((t) => t.id === wantT) && treatById(wantT) ? [treatById(wantT)] : []);
   const keepT = $("lTreat").value;
-  $("lTreat").innerHTML = (logEditId ? "" : '<option value="">新しく薬浴を始める</option>') +
+  $("lTreat").innerHTML = (logEditId ? "" : '<option value="">新しく' + (BATH_ACTIONS.includes(bath) ? bath : "薬浴") + 'を始める</option>') +
     tr.map((t) => '<option value="' + t.id + '">' + escapeHtml(treatLabel(t) + "（" + treatTargetText(t) + "）" + (t.status === "done" ? "・終了" : "")) + '</option>').join("");
   const want = wantT || keepT;
   if (want && tr.some((t) => t.id === want)) $("lTreat").value = want;
-  const drugs = [...new Set(pastItems("薬浴").concat(pastItems("投薬"), state.treatments.map((x) => x.drug).filter(Boolean), TREAT_DRUGS))].slice(0, 40);
+  const salt = bath === "塩浴";
+  const drugs = salt ? SALT_CONCS : [...new Set(pastItems("薬浴").concat(pastItems("投薬"), state.treatments.filter((x) => treatKind(x) !== "塩浴").map((x) => x.drug).filter(Boolean), TREAT_DRUGS))].slice(0, 40);
   $("lTrDrugList").innerHTML = drugs.map((x) => '<option value="' + escapeHtml(x) + '">').join("");
-  $("lTrReasonList").innerHTML = TREAT_REASONS.map((x) => '<option value="' + escapeHtml(x) + '">').join("");
+  $("lTrReasonList").innerHTML = (salt ? SALT_REASONS : TREAT_REASONS).map((x) => '<option value="' + escapeHtml(x) + '">').join("");
   delete $("lEquip").dataset.want; delete $("lTreat").dataset.want;
 }
-// 薬浴：「新しく始める」ときは薬・期間の入力欄を、すでにある薬浴のときは経過の欄を出す
+// 塩の量の自動計算（塩浴の開始時／塩浴中の水換え時）
+function syncSaltCalc() {
+  const tank = tankById($("lTank").value);
+  const salt = $("lAction").value === "塩浴" && !$("lTreat").value;
+  const calc = salt ? saltCalcText(tank, $("lTrDrug").value) : "";
+  $("lTrSalt").style.display = calc ? "" : "none";
+  $("lTrSalt").textContent = calc;
+  const wc = $("lAction").value === "水換え" ? saltForWaterChange(tank, Number($("lPct").value)) : null;
+  $("lWcSalt").style.display = wc ? "" : "none";
+  if (wc) $("lWcSalt").textContent = "塩 " + fmtG(wc.grams) + "（入れ替え " + fmtNum(Math.round(wc.liters * 10) / 10) + "L × " + fmtNum(wc.pct) + "%）";
+}
+// 薬浴と塩浴で、入力欄の言葉を切り替える
+function syncBathWords(a) {
+  const salt = a === "塩浴";
+  $("lTreatLabel").textContent = a;
+  $("lTrDrugLabel").textContent = salt ? "塩の濃度" : "薬・処置";
+  $("lTrDrug").placeholder = salt ? "例：0.5%（水1Lに塩5g）" : "例：グリーンF";
+  $("lTrReason").placeholder = salt ? "例：体力回復" : "例：白点病";
+  $("lTrEveryLabel").textContent = (salt ? "水換え・塩の調整" : "薬の追加・水換え") + "（日おき）";
+  $("lTrHint").style.display = salt ? "none" : "";                     // 塩浴には説明文を出さない
+  $("lDosedLabel").textContent = "今日、" + (salt ? "水換え・塩の調整" : "薬の追加・水換え") + "をした";
+}
+// 薬浴・塩浴：「新しく始める」ときは薬・期間の入力欄を、すでにある薬浴のときは経過の欄を出す
 function syncTreatNew() {
   const isNew = !$("lTreat").value;
   $("lTreatNew").style.display = isNew ? "" : "none";
@@ -184,20 +210,21 @@ function saveLog() {
     data.equipId = $("lEquip").value;
   }
   let newTreat = null;
-  if (action === "薬浴") {
+  if (BATH_ACTIONS.includes(action)) {
     if ($("lTreat").value) {
       data.treatmentId = $("lTreat").value;
       if ($("lProgress").value) data.progress = $("lProgress").value;
       if ($("lDosed").checked) data.dosed = true;
     } else {
-      // 新しく薬浴を始める：薬浴を作り、その1日目の記録として残す
+      // 新しく始める：薬浴／塩浴を作り、その1日目の記録として残す
       const days = readNum("lTrDays", 1, 365, true), every = readNum("lTrEvery", 1, 60, true);
       if (!days.ok) { toast("期間は1〜365日の数字で入力してください"); return; }
-      if (!every.ok) { toast("薬の追加・水換えの間隔は1〜60日の数字で入力してください"); return; }
+      if (!every.ok) { toast("間隔は1〜60日の数字で入力してください"); return; }
       const drug = $("lTrDrug").value.trim(), reason = $("lTrReason").value.trim();
-      if (!drug && !reason) { toast("薬・処置か、症状・目的を入力してください"); return; }
-      newTreat = { id: uid(), createdAt: todayStr(), tankId, fishIds: logFishSel.slice(), reason, drug, dose: "", startDate: data.date,
+      if (!drug && !reason) { toast(action === "塩浴" ? "目的か、塩の濃度を入力してください" : "薬・処置か、症状・目的を入力してください"); return; }
+      newTreat = { id: uid(), createdAt: todayStr(), kind: action, tankId, fishIds: logFishSel.slice(), reason, drug, dose: "", startDate: data.date,
         days: days.value, every: every.value, memo: "", status: "active", endDate: null, result: "" };
+      if (action === "塩浴" && saltPctOf(drug)) { const tk = tankById(tankId); if (tk && Number(tk.volume) > 0) newTreat.dose = "塩 " + fmtG(saltGrams(Number(tk.volume), saltPctOf(drug))); }
       data.treatmentId = newTreat.id; data.dosed = true;
       if (drug) data.item = drug;
     }
@@ -222,7 +249,7 @@ function saveLog() {
     toast("更新しました");
   } else {
     state.logs.push(Object.assign({ id: uid() }, data));
-    toast(newTreat ? "薬浴を始めました" : "記録しました");
+    toast(newTreat ? action + "を始めました" : "記録しました");
   }
   if (!save()) return;
   closeOverlay("logOverlay");
@@ -236,7 +263,9 @@ function saveLog() {
 
 $("lTank").onchange = () => { logFishSel = []; fillTargets(); updateActionFields(); const t = tankById($("lTank").value); if (t && t.wcPercent && !$("lPct").value) $("lPct").value = t.wcPercent; };
 $("lAction").onchange = updateActionFields;
-$("lTreat").onchange = syncTreatNew;
+$("lTreat").onchange = () => { syncTreatNew(); syncSaltCalc(); };
+$("lTrDrug").addEventListener("input", syncSaltCalc);
+$("lPct").addEventListener("input", syncSaltCalc);
 $("lTarget").onchange = () => { logFishSel = $("lTarget").value ? [$("lTarget").value] : []; updateTagKind(); };
 $("lTargetMulti").onchange = () => {
   logFishSel = [...$("lTargetMulti").querySelectorAll("input:checked")].map((i) => i.value);

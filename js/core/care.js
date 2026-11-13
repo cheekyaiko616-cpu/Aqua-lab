@@ -42,6 +42,31 @@ function equipDueText(s) {
   return "あと" + s.diff + "日";
 }
 
+// ---- 塩浴の塩の量（水槽の容量と、塩の濃度から計算する） ----
+// 濃度（%）は、文字の中の「0.5%」のような数字を読む。水1Lに対して、1%＝10g
+function saltPctOf(text) {
+  const m = String(text || "").match(/(\d+(?:\.\d+)?)\s*[%％]/);
+  const v = m ? parseFloat(m[1]) : NaN;
+  return v > 0 && v <= 3 ? v : null;
+}
+function saltGrams(liters, pct) { return Math.round(liters * pct * 10 * 10) / 10; }
+const fmtG = (g) => (g >= 1000 ? fmtNum(Math.round(g) / 1000) + "kg" : fmtNum(g) + "g");
+// 「塩 300g（60L × 0.5%）」。計算できないとき（濃度や水槽の容量が分からないとき）は空
+function saltCalcText(tank, concText) {
+  const pct = saltPctOf(concText);
+  const vol = tank && Number(tank.volume) > 0 ? Number(tank.volume) : 0;
+  if (!pct || !vol) return "";
+  return "塩 " + fmtG(saltGrams(vol, pct)) + "（" + fmtNum(vol) + "L × " + fmtNum(pct) + "%）";
+}
+// 塩浴中の水槽で水換えをするときの、足す塩の量（入れ替える水の分だけ足す）
+function saltForWaterChange(tank, pctChanged) {
+  if (!tank || !(Number(tank.volume) > 0) || !(pctChanged > 0)) return null;
+  const tr = treatOfTank(tank.id, true).find((x) => treatKind(x) === "塩浴" && saltPctOf(x.drug));
+  if (!tr) return null;
+  const pct = saltPctOf(tr.drug), liters = Number(tank.volume) * pctChanged / 100;
+  return { liters, grams: saltGrams(liters, pct), pct };
+}
+
 // ---- 薬浴 ----
 function treatById(id) { return state.treatments.find((t) => t.id === id) || null; }
 function treatOfTank(tankId, activeOnly) {
@@ -52,7 +77,9 @@ function treatTargetText(t) {
   const names = (t.fishIds || []).map((id) => fishById(id)).filter(Boolean).map(fishLabel);
   return names.length ? names.join("、") : "水槽全体";
 }
-function treatLabel(t) { return [t.reason, t.drug].filter(Boolean).join(" ・ ") || "薬浴"; }
+function treatKind(t) { return t.kind === "塩浴" ? "塩浴" : "薬浴"; }                  // 昔の薬浴は kind がない＝薬浴
+const treatDoseWord = (t) => (treatKind(t) === "塩浴" ? "水換え・塩の調整" : "薬の追加・水換え");
+function treatLabel(t) { return (treatKind(t) === "塩浴" ? "塩浴 " : "") + ([t.reason, t.drug].filter(Boolean).join(" ・ ") || (treatKind(t) === "塩浴" ? "" : "薬浴")); }
 function treatLogs(treatId) {
   const c = careIndex();
   let a = c.treatSorted.get(treatId);
@@ -91,7 +118,7 @@ function treatStatus(t) {
 // 記録に出す「どの薬浴の何日目か」
 function treatLogText(l) {
   const t = treatById(l.treatmentId);
-  if (!t) return "薬浴（削除済み）";
+  if (!t) return (l.action || "薬浴") + "（削除済み）";
   return treatLabel(t) + "（" + (Math.max(1, daysBetween(t.startDate || l.date, l.date) + 1)) + "日目）";
 }
 
@@ -118,7 +145,7 @@ function carePlanMap() {
     });
     treatOfTank(t.id, true).forEach((tr) => {
       const s = treatStatus(tr);
-      if (s.next) add(s.next < today ? today : s.next, { t, icon: "heal", text: treatLabel(tr) + "：薬の追加・水換え" });
+      if (s.next) add(s.next < today ? today : s.next, { t, icon: "heal", text: treatLabel(tr) + "：" + treatDoseWord(tr) });
       if (tr.days && tr.startDate) {
         const end = addDays(tr.startDate, tr.days - 1);
         add(end < today ? today : end, { t, icon: "heal", text: treatLabel(tr) + "：終了予定" });

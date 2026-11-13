@@ -1,7 +1,12 @@
 "use strict";
 // ===== 買い物（タブ「買い物」）：名前を入れて、AmazonまたはRakutenで探す =====
-// 「探す」ボタンは、ふつうのリンク。スマホにアプリが入っていれば、アプリが開く（入っていなければブラウザで開く）。
-// 名前の候補は、登録した機器・使った餌と薬から出す。
+// ホーム画面に追加したアプリからは、ふつうのリンクだとアプリが開かず、ブラウザ（web版）が開いてしまう。
+// そのため「探す」ボタンは、アプリ専用のアドレスでアプリを直接起動する。
+//   Amazon：検索結果までそのまま開く
+//   楽天：アプリの起動のみ（検索したい言葉は自動でコピーするので、アプリの検索欄に貼り付ける）
+// 開かないとき用に、web版へのリンクも下に出す。名前の候補は、登録した機器・使った餌と薬から出す。
+const AMAZON_APP = "com.amazon.mobile.shopping.web://www.amazon.co.jp/";
+const RAKUTEN_APP_SCHEMES = ["rakuten-ichiba-app://", "rakutenichiba://", "rakuten-ichiba://"];
 
 const shopUrls = (q) => ({
   amazon: q ? "https://www.amazon.co.jp/s?k=" + encodeURIComponent(q) : "https://www.amazon.co.jp/",
@@ -12,6 +17,8 @@ function updateShopLinks() {
   const u = shopUrls(q);
   $("shopAmazon").href = u.amazon;
   $("shopRakuten").href = u.rakuten;
+  $("shopAmazonWeb").href = u.amazon;
+  $("shopRakutenWeb").href = u.rakuten;
   $("shopAmazon").textContent = q ? "Amazonで「" + (q.length > 8 ? q.slice(0, 8) + "…" : q) + "」を探す" : "Amazonを開く";
   $("shopRakuten").textContent = q ? "楽天で「" + (q.length > 8 ? q.slice(0, 8) + "…" : q) + "」を探す" : "楽天を開く";
 }
@@ -39,3 +46,27 @@ $("shopSuggest").onclick = (e) => {
   updateShopLinks();
   window.scrollTo(0, 0);
 };
+
+// アプリを起動する（アプリが開いて、この画面が隠れたら、そこで止める）
+function launchApp(urls) {
+  let i = 0;
+  const next = () => {
+    if (document.hidden || i >= urls.length) return;
+    location.href = urls[i++];
+    setTimeout(next, 500);
+  };
+  next();
+}
+$("shopAmazon").addEventListener("click", (e) => {
+  e.preventDefault();
+  const q = $("shopQ").value.trim();
+  launchApp([AMAZON_APP + (q ? "s?k=" + encodeURIComponent(q) : "")]);
+});
+$("shopRakuten").addEventListener("click", (e) => {
+  e.preventDefault();
+  const q = $("shopQ").value.trim();
+  if (q && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(q).then(() => toast("「" + q + "」をコピーしました。楽天アプリの検索欄に貼り付けてください"), () => {});
+  }
+  launchApp(RAKUTEN_APP_SCHEMES);
+});

@@ -10,6 +10,7 @@ function renderHero() {
     return;
   }
   const rows = [];
+  const treatKinds = [];
   let wcCount = 0, treatCount = 0, equipCount = 0, tempCount = 0;
   state.tanks.forEach((t) => {
     const s = wcStatus(t);
@@ -21,9 +22,10 @@ function renderHero() {
     if (s.tempWarn) { tempCount++; rows.push({ t, text: s.tempWarn }); }
     treatOfTank(t.id, true).forEach((tr) => {
       treatCount++;
+      if (!treatKinds.includes(treatKind(tr))) treatKinds.push(treatKind(tr));
       const ts = treatStatus(tr);
-      const note = ts.doseDue ? "（薬の追加・水換えの日）" : ts.over ? "（予定日数を過ぎています）" : "";
-      rows.push({ t, text: "薬浴 " + ts.day + "日目 " + treatLabel(tr) + note });
+      const note = ts.doseDue ? "（" + treatDoseWord(tr) + "の日）" : ts.over ? "（予定日数を過ぎています）" : "";
+      rows.push({ t, text: treatKind(tr) + " " + ts.day + "日目 " + treatLabel(tr) + note });
     });
     equipOfTank(t.id).forEach((e) => {
       const es = equipStatus(e);
@@ -38,7 +40,7 @@ function renderHero() {
   if (backupDue) rows.push({ t: null, name: "バックアップ", text: lastB ? daysBetween(lastB, todayStr()) + "日していません（タップで設定へ）" : "まだしていません（タップで設定へ）" });
   const todayLogs = logsOnDate(todayStr()).length;
   setHtml($("heroBig"), wcCount > 0 ? svgIcon("bucket") + " 水換えのおすすめ：" + wcCount + "槽"
-    : treatCount > 0 ? svgIcon("heal") + " 薬浴中：" + treatCount + "件"
+    : treatCount > 0 ? svgIcon("heal") + " " + treatKinds.join("・") + "中：" + treatCount + "件"
     : equipCount > 0 ? svgIcon("wrench") + " 機器の手入れ時期：" + equipCount + "件"
     : tempCount > 0 ? svgIcon("thermo") + " 水温を確認してください"
     : backupDue ? "バックアップをおすすめします" : "今日の水換えはありません");

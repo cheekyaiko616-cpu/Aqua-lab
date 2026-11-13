@@ -94,7 +94,8 @@
         <a class="shop-btn amazon" id="shopAmazon" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonで探す</a>
         <a class="shop-btn rakuten" id="shopRakuten" href="https://www.rakuten.co.jp/" target="_blank" rel="noopener">楽天で探す</a>
       </div>
-      <div class="hint">アプリを入れている場合は、アプリが開きます。入っていない場合は、ブラウザで開きます。</div>
+      <div class="hint">アプリが開きます。楽天は、探したい言葉をコピーするので、アプリの検索欄に貼り付けてください。</div>
+      <div class="hint">アプリが開かないとき：<a id="shopAmazonWeb" href="https://www.amazon.co.jp/" target="_blank" rel="noopener">Amazonのweb版</a> ／ <a id="shopRakutenWeb" href="https://www.rakuten.co.jp/" target="_blank" rel="noopener">楽天のweb版</a></div>
     </div>
     <div id="shopSuggest"></div>
   </section>
@@ -366,6 +367,7 @@
       <div><label for="trDose">量・濃度</label><input type="text" id="trDose" maxlength="30" placeholder="例：規定量"></div>
       <div><label for="trStart">始めた日</label><input type="date" id="trStart"></div>
     </div>
+    <div class="hint" id="trSaltCalc" style="display:none;font-weight:bold;"></div>
     <div class="two">
       <div><label for="trDays">予定の日数</label><input type="number" id="trDays" min="1" max="365" inputmode="numeric" placeholder="例：7"></div>
       <div><label for="trEvery">薬の追加・水換えの間隔（日）</label><input type="number" id="trEvery" min="1" max="60" inputmode="numeric" placeholder="例：3"></div>
@@ -413,6 +415,7 @@
     </div>
     <div class="act-box" id="lWcBox">
       <div class="size-row"><span>換水量</span><input type="number" id="lPct" min="1" max="100" inputmode="numeric" aria-label="換水量（パーセント）"><span>%</span></div>
+      <div class="hint" id="lWcSalt" style="display:none;"></div>
     </div>
     <div class="act-box" id="lItemBox">
       <div class="two">
@@ -425,23 +428,24 @@
       <select id="lEquip"></select>
     </div>
     <div class="act-box" id="lTreatBox">
-      <label for="lTreat">薬浴</label>
+      <label for="lTreat" id="lTreatLabel">薬浴</label>
       <select id="lTreat"></select>
       <div id="lTreatNew">
         <div class="two">
-          <div><label for="lTrDrug">薬・処置</label><input type="text" id="lTrDrug" maxlength="30" list="lTrDrugList" placeholder="例：グリーンF"><datalist id="lTrDrugList"></datalist></div>
+          <div><label for="lTrDrug" id="lTrDrugLabel">薬・処置</label><input type="text" id="lTrDrug" maxlength="30" list="lTrDrugList" placeholder="例：グリーンF"><datalist id="lTrDrugList"></datalist></div>
           <div><label for="lTrReason">症状・目的</label><input type="text" id="lTrReason" maxlength="30" list="lTrReasonList" placeholder="例：白点病"><datalist id="lTrReasonList"></datalist></div>
         </div>
         <div class="two">
           <div><label for="lTrDays">期間（日数）</label><input type="number" id="lTrDays" inputmode="numeric" min="1" max="365" placeholder="例：7"></div>
-          <div><label for="lTrEvery">薬の追加・水換え（日おき）</label><input type="number" id="lTrEvery" inputmode="numeric" min="1" max="60" placeholder="例：3"></div>
+          <div><label for="lTrEvery" id="lTrEveryLabel">薬の追加・水換え（日おき）</label><input type="number" id="lTrEvery" inputmode="numeric" min="1" max="60" placeholder="例：3"></div>
         </div>
-        <div class="hint">この日から薬浴を始めます。期間が終わる日や、次の薬の追加・水換えの日がカレンダーに出ます。</div>
+        <div class="hint" id="lTrSalt" style="display:none;font-weight:bold;"></div>
+        <div class="hint" id="lTrHint">この日から薬浴を始めます。期間が終わる日や、次の薬の追加・水換えの日がカレンダーに出ます。</div>
       </div>
       <div id="lTreatOld">
         <label for="lProgress">魚の経過</label>
         <select id="lProgress"></select>
-        <label class="chk"><input type="checkbox" id="lDosed"> 今日、薬の追加・水換えをした</label>
+        <label class="chk"><input type="checkbox" id="lDosed"> <span id="lDosedLabel">今日、薬の追加・水換えをした</span></label>
       </div>
     </div>
     <div class="act-box" id="lWaterBox"><div class="water-grid" id="lWaterGrid"></div></div>

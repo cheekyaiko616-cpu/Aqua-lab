@@ -120,6 +120,7 @@ const ACTION_STYLE = {
   "フィルター掃除": { i: svgIcon("filter"), c: "#d6f5ea", dot: "#2f9f7d" },
   "機器の手入れ":   { i: svgIcon("wrench"), c: "#dfe6f2", dot: "#5b78a8" },
   "薬浴":           { i: svgIcon("heal"), c: "#ffd6d6", dot: "#d9534f" },
+  "塩浴":           { i: svgIcon("bubbles"), c: "#d5f1ee", dot: "#2a9d8f" },
   "掃除":           { i: svgIcon("brush"), c: "#e1f0d7", dot: "#6a9e3f" },
   "様子メモ":       { i: svgIcon("note"), c: "#fdf0c7", dot: "#c9a227" },
   "その他":         { i: svgIcon("sparkle"), c: "#e6e9ef", dot: "#8a96a3" }
@@ -144,6 +145,9 @@ const EQUIP_KINDS = {
 const EQUIP_KIND_NAMES = Object.keys(EQUIP_KINDS);
 
 // ---- 薬浴 ----
+// 塩浴：塩の濃度の目安と、目的の候補（塩浴は 0.5%＝水1Lに塩5g が基本。水換えのときは、入れ替えた水の量に合わせて塩を足す）
+const SALT_CONCS = ["0.5%（水1Lに塩5g）", "0.3%（水1Lに塩3g）", "0.7%（水1Lに塩7g）"];
+const SALT_REASONS = ["体力回復", "病気の予防", "新しい魚の導入後", "輸送後の回復", "白点病の初期", "尾ぐされ・ヒレぐされの初期", "ストレスの軽減"];
 const TREAT_REASONS = ["白点病", "尾ぐされ・ヒレぐされ", "水カビ病", "エラ病", "松かさ病", "穴あき病", "寄生虫", "体表の傷", "新しい魚のトリートメント", "塩浴（体力回復）", "予防"];
 const TREAT_DRUGS = ["グリーンFゴールド", "グリーンFリキッド", "メチレンブルー", "エルバージュエース", "ニューグリーンF", "観パラD", "ネオパラD", "塩（0.5%）"];
 const TREAT_PROGRESS = ["良くなった", "変わらない", "悪くなった"];
