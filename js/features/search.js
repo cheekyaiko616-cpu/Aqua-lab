@@ -29,7 +29,7 @@ function fillSearchFish() {
   const tankId = $("sTank").value;
   const list = tankId ? fishOfTank(tankId) : state.fish;
   $("sFish").innerHTML = '<option value="">すべての生体</option>' +
-    list.map((f) => '<option value="' + f.id + '">' + escapeHtml(fishLabel(f)) + (tankId ? "" : "（" + escapeHtml(tankName(f.tankId)) + "）") + '</option>').join("");
+    list.map((f) => '<option value="' + f.id + '">' + escapeHtml(fishChoiceLabel(f)) + (tankId ? "" : "（" + escapeHtml(tankName(f.tankId)) + "）") + '</option>').join("");
   $("sFish").value = list.some((f) => f.id === keep) ? keep : "";
 }
 function openSearch() {

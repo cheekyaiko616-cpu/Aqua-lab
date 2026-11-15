@@ -11,7 +11,8 @@ function openTank(id, refresh) {
   tankDetailId = id;
   const s = wcStatus(t);
   const logs = logsOfTankNewestFirst(t.id);
-  const fish = fishOfTank(t.id);
+  const fish = aliveFishOfTank(t.id);
+  const deadFish = deadFishOfTank(t.id);
   const today = todayStr();
 
   // 見出し
@@ -47,16 +48,24 @@ function openTank(id, refresh) {
   const careHtml = treatSectionHtml(t) + equipSectionHtml(t);
 
   // 生体
+  const fishCard = (f) => {
+    const tl = f.deceased ? null : latestFishTags(f.id);
+    const sub = f.deceased
+      ? "死亡 " + fmtSlash(f.deceased) + " ・ " + (f.count || 1) + "匹"
+      : (f.name ? fishSpecies(f) + " ・ " : "") + (f.count || 1) + "匹" + (f.sex ? " ・ " + f.sex : "");
+    return '<button class="card small' + (f.deceased ? ' dead' : '') + '" data-fish="' + f.id + '" style="' + fishStyle(f) + '">' +
+      '<div class="thumb">' + fishThumb(f) + '</div><div class="info"><div class="name">' + escapeHtml(fishLabel(f)) + '</div>' +
+      '<div class="sub">' + escapeHtml(sub) + '</div>' +
+      (tl ? '<div>' + tagChipsHtml(tl.tags.slice(0, 3)) + '</div>' : '') + '</div></button>';
+  };
   const fishHtml = '<div class="section"><h3>生体（' + fishCountOfTank(t.id) + '匹）</h3>' +
-    '<div class="grid" id="fishList">' + fish.map((f) => {
-      const tl = latestFishTags(f.id);
-      return '<button class="card small" data-fish="' + f.id + '" style="' + fishStyle(f) + '">' +
-        '<div class="thumb">' + fishThumb(f) + '</div><div class="info"><div class="name">' + escapeHtml(fishLabel(f)) + '</div>' +
-        '<div class="sub">' + escapeHtml((f.name ? fishSpecies(f) + " ・ " : "") + (f.count || 1) + "匹" + (f.sex ? " ・ " + f.sex : "")) + '</div>' +
-        (tl ? '<div>' + tagChipsHtml(tl.tags.slice(0, 3)) + '</div>' : '') + '</div></button>';
-    }).join("") + '</div>' +
-    (fish.length ? '' : '<div class="hint">まだ生体は登録されていません。</div>') +
-    '<div class="btn-row"><button class="secondary" id="addFishBtn">＋ 生体を追加</button></div></div>';
+    '<div class="grid" id="fishList">' + fish.map(fishCard).join("") + '</div>' +
+    (fish.length ? '' : '<div class="hint">' + (deadFish.length ? '生きている生体はいません。' : 'まだ生体は登録されていません。') + '</div>') +
+    '<div class="btn-row"><button class="secondary" id="addFishBtn">＋ 生体を追加</button></div>' +
+    (deadFish.length
+      ? '<details class="dead-fish"><summary>亡くなった生体（' + deadFish.reduce((s, f) => s + (Number(f.count) || 1), 0) + '匹）</summary>' +
+        '<div class="grid" id="deadFishList">' + deadFish.map(fishCard).join("") + '</div></details>'
+      : '') + '</div>';
 
   // 写真（水槽の写真と、記録の写真）
   tankPhotos = [];

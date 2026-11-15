@@ -35,3 +35,11 @@
 
 /* 生体の詳細は水槽の詳細の上に重ねる */
 #fishOverlay { z-index: 21; }
+
+/* 死亡した生体（記録は残すが、薄く表示する） */
+.card.dead, .detail-head.dead { filter: grayscale(1); opacity: .7; }
+.detail-head.dead + .facts { filter: none; }
+.notice.dead-note { background: var(--accent-soft); color: var(--muted); }
+details.dead-fish { margin-top: 10px; }
+details.dead-fish summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 6px 0; }
+details.dead-fish .grid { margin-top: 6px; }

@@ -20,7 +20,7 @@ function renderBackupInfo() {
   $("backupInfo").textContent = text;
 }
 function renderSettings() {
-  const fishN = state.fish.reduce((s, f) => s + (Number(f.count) || 1), 0);
+  const fishN = aliveFishTotal();
   const base = "水槽 " + state.tanks.length + "・生体 " + fishN + "匹・記録 " + state.logs.length + "件・保存容量 約" + storageKB() + "KB";
   $("dataInfo").textContent = base;
   renderTagCount();

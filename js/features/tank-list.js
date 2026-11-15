@@ -1,7 +1,7 @@
 "use strict";
 // ===== 水槽一覧（タブ「水槽」） =====
 function renderTanks() {
-  $("tankCount").textContent = "水槽 " + state.tanks.length + "・生体 " + state.fish.reduce((s, f) => s + (Number(f.count) || 1), 0) + "匹";
+  $("tankCount").textContent = "水槽 " + state.tanks.length + "・生体 " + aliveFishTotal() + "匹";
   $("tankEmpty").style.display = state.tanks.length ? "none" : "block";
   setHtml($("tankGrid"), state.tanks.map((t) => {
     const n = fishCountOfTank(t.id);

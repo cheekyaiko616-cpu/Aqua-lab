@@ -19,12 +19,13 @@ function setLogDate(v) { $("lDate").value = v; $("lDateText").textContent = fmtD
 // 選んでいる生体（logFishSel）を、画面の選択肢に反映する。給餌は複数選べ、それ以外は1匹まで
 let logFishSel = [];
 function fillTargets() {
-  const fish = fishOfTank($("lTank").value);
+  // 死亡した生体は選べない（すでにその生体への記録を編集しているときだけ残す）
+  const fish = fishChoices($("lTank").value, logFishSel);
   logFishSel = logFishSel.filter((id) => fish.some((f) => f.id === id));
   $("lTarget").innerHTML = '<option value="">水槽全体</option>' +
-    fish.map((f) => '<option value="' + f.id + '">' + escapeHtml(fishLabel(f)) + '</option>').join("");
+    fish.map((f) => '<option value="' + f.id + '">' + escapeHtml(fishChoiceLabel(f)) + '</option>').join("");
   $("lTargetMulti").innerHTML = fish.map((f) =>
-    '<label class="chk"><input type="checkbox" value="' + f.id + '"' + (logFishSel.includes(f.id) ? ' checked' : '') + '> ' + escapeHtml(fishLabel(f)) + '</label>').join("");
+    '<label class="chk"><input type="checkbox" value="' + f.id + '"' + (logFishSel.includes(f.id) ? ' checked' : '') + '> ' + escapeHtml(fishChoiceLabel(f)) + '</label>').join("");
   syncTargetUi();
 }
 function syncTargetUi() {
@@ -36,7 +37,7 @@ function syncTargetUi() {
 // 内容に合わせて、出す入力欄を切り替える
 function updateActionFields() {
   const a = $("lAction").value;
-  const hasFish = fishOfTank($("lTank").value).length > 0;
+  const hasFish = fishChoices($("lTank").value, logFishSel).length > 0;
   const multi = (a === "給餌" || BATH_ACTIONS.includes(a)) && hasFish;                 // 給餌・薬浴：複数の生体を選べる
   const single = (FISH_ACTIONS.includes(a) || a === "投薬") && a !== "給餌" && !BATH_ACTIONS.includes(a) && hasFish;   // 様子メモなど：1匹まで
   $("lTargetBox").style.display = single ? "" : "none";
@@ -271,7 +272,7 @@ $("lTargetMulti").onchange = () => {
   logFishSel = [...$("lTargetMulti").querySelectorAll("input:checked")].map((i) => i.value);
   updateTagKind();
 };
-$("lTargetAll").onclick = () => { logFishSel = fishOfTank($("lTank").value).map((f) => f.id); syncTargetUi(); updateTagKind(); };
+$("lTargetAll").onclick = () => { logFishSel = aliveFishOfTank($("lTank").value).map((f) => f.id); syncTargetUi(); updateTagKind(); };
 $("lTargetNone").onclick = () => { logFishSel = []; syncTargetUi(); updateTagKind(); };
 $("lTags").onclick = (e) => {
   const b = e.target.closest("[data-tag]");

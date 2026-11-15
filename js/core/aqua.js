@@ -11,12 +11,25 @@ function tankLabel(t) {
   if (t.volume) parts.push(fmtNum(t.volume) + "L");
   return parts.join(" ・ ");
 }
-// 水槽の生体の合計匹数
+// 水槽の生体の合計匹数（死亡した生体は数えない）
 function fishCountOfTank(tankId) {
-  return fishOfTank(tankId).reduce((s, f) => s + (Number(f.count) || 1), 0);
+  return aliveFishOfTank(tankId).reduce((s, f) => s + (Number(f.count) || 1), 0);
+}
+// すべての水槽の、生きている生体の合計匹数
+function aliveFishTotal() {
+  return state.fish.reduce((s, f) => s + (f.deceased ? 0 : (Number(f.count) || 1)), 0);
 }
 
 // ---- 生体 ----
+function fishAlive(f) { return !f.deceased; }
+function aliveFishOfTank(tankId) { return fishOfTank(tankId).filter(fishAlive); }
+function deadFishOfTank(tankId) { return fishOfTank(tankId).filter((f) => !fishAlive(f)); }
+// 記録の対象に選べる生体：生きている生体＋（編集中の記録がもともと対象にしている生体）
+function fishChoices(tankId, keepIds) {
+  const keep = keepIds || [];
+  return fishOfTank(tankId).filter((f) => fishAlive(f) || keep.includes(f.id));
+}
+function fishChoiceLabel(f) { return fishLabel(f) + (f.deceased ? "（死亡）" : ""); }
 function fishCatOf(f) { const c = FISH_CAT_LEGACY[f.category] || f.category; return FISH_CATS[c] ? c : OTHER; }
 function fishStyle(f) { return "--c:" + FISH_CATS[fishCatOf(f)].color + ";"; }
 function fishSpecies(f) {

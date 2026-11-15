@@ -1,7 +1,9 @@
 "use strict";
 // ===== アプリ全体のデータ（水槽・生体・記録・設定） =====
 // tanks : { id, name, type, volume, setupDate, wcInterval, wcPercent, no3Limit, tempMin, tempMax, photo, memo, createdAt }
-// fish  : { id, tankId, name, category, type, count, sex, acquired, photo, memo, createdAt }
+// fish  : { id, tankId, name, category, type, count, sex, acquired, photo, memo, createdAt,
+//           deceased(死亡日。無ければ生存), deathNote(死亡のメモ) }
+//           ※死亡した生体は記録として残るが、新しい記録の対象には選べない
 // logs  : { id, date, tankId, fishId(null=水槽全体), action, memo, photo, tags,
 //           pct(水換えの量%), item/amount(餌・薬の名前と量), water{temp,ph,nh3,no2,no3,kh},
 //           equipId(機器の手入れ), treatmentId/progress/dosed(薬浴の経過) }

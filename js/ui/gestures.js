@@ -33,7 +33,7 @@ function slideIn(el, delta) {
 }
 
 // ---- 左から右へのスワイプで1つ前の画面へ戻る（入力画面） ----
-["tankEditOverlay", "fishEditOverlay", "pickOverlay", "logOverlay"].forEach((id) => {
+["tankEditOverlay", "fishEditOverlay", "fishDeadOverlay", "pickOverlay", "logOverlay"].forEach((id) => {
   const el = $(id);
   let sx = 0, sy = 0, st = 0, active = false;
   el.addEventListener("touchstart", (e) => {

@@ -61,9 +61,9 @@ function handleTreatClick(el, tankId) {
 
 // ---- 開始・編集 ----
 function fillTreatFish(tankId, selected) {
-  const fish = fishOfTank(tankId);
+  const fish = fishChoices(tankId, selected);   // 死亡した生体は選べない（すでに対象のときだけ残す）
   $("trFishBox").innerHTML = fish.length
-    ? fish.map((f) => '<label class="chk"><input type="checkbox" value="' + f.id + '"' + (selected.includes(f.id) ? ' checked' : '') + '> ' + escapeHtml(fishLabel(f)) + '</label>').join("")
+    ? fish.map((f) => '<label class="chk"><input type="checkbox" value="' + f.id + '"' + (selected.includes(f.id) ? ' checked' : '') + '> ' + escapeHtml(fishChoiceLabel(f)) + '</label>').join("")
     : '<div class="hint" style="margin:0;">この水槽には生体が登録されていません（水槽全体が対象になります）</div>';
 }
 function showTreatEnd() { $("trEndBox").style.display = $("trStatus").value === "done" ? "" : "none"; }

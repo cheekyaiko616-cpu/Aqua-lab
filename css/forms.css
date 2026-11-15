@@ -8,17 +8,17 @@
 #pickOverlay .btns { margin-top: 8px; }
 
 /* 入力画面は詰めて、できるだけ1画面に収める */
-#logOverlay .sheet, #tankEditOverlay .sheet, #fishEditOverlay .sheet { max-height: 96vh; padding: 12px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
-#logOverlay .sheet::before, #tankEditOverlay .sheet::before, #fishEditOverlay .sheet::before { margin: 0 auto 6px; }
-#logOverlay .sheet h2, #tankEditOverlay .sheet h2, #fishEditOverlay .sheet h2 { margin: 0 0 6px; }
-#logOverlay label, #tankEditOverlay label, #fishEditOverlay label { margin: 8px 0 3px; font-size: 13px; }
+#logOverlay .sheet, #tankEditOverlay .sheet, #fishEditOverlay .sheet, #fishDeadOverlay .sheet { max-height: 96vh; padding: 12px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
+#logOverlay .sheet::before, #tankEditOverlay .sheet::before, #fishEditOverlay .sheet::before, #fishDeadOverlay .sheet::before { margin: 0 auto 6px; }
+#logOverlay .sheet h2, #tankEditOverlay .sheet h2, #fishEditOverlay .sheet h2, #fishDeadOverlay .sheet h2 { margin: 0 0 6px; }
+#logOverlay label, #tankEditOverlay label, #fishEditOverlay label, #fishDeadOverlay label { margin: 8px 0 3px; font-size: 13px; }
 #logOverlay input[type="number"], #logOverlay input[type="text"], #logOverlay select,
-#tankEditOverlay input, #tankEditOverlay select, #fishEditOverlay input, #fishEditOverlay select { padding: 8px 10px; }
-#logOverlay textarea, #tankEditOverlay textarea, #fishEditOverlay textarea { min-height: 52px; height: 52px; resize: none; padding: 8px 10px; }
-#logOverlay .btns, #tankEditOverlay .btns, #fishEditOverlay .btns { margin-top: 4px; padding: 8px 0 calc(2px + env(safe-area-inset-bottom, 0px)); }
+#tankEditOverlay input, #tankEditOverlay select, #fishEditOverlay input, #fishDeadOverlay input, #fishEditOverlay select, #fishDeadOverlay select { padding: 8px 10px; }
+#logOverlay textarea, #tankEditOverlay textarea, #fishEditOverlay textarea, #fishDeadOverlay textarea { min-height: 52px; height: 52px; resize: none; padding: 8px 10px; }
+#logOverlay .btns, #tankEditOverlay .btns, #fishEditOverlay .btns, #fishDeadOverlay .btns { margin-top: 4px; padding: 8px 0 calc(2px + env(safe-area-inset-bottom, 0px)); }
 #logOverlay .day-nav button { padding: 4px 14px; }
-#fishEditOverlay .tabs { margin: 10px 0 0; }
-#fishEditOverlay .tabs button { padding: 6px 4px; font-size: 13px; white-space: nowrap; }
+#fishEditOverlay .tabs, #fishDeadOverlay .tabs { margin: 10px 0 0; }
+#fishEditOverlay .tabs button, #fishDeadOverlay .tabs button { padding: 6px 4px; font-size: 13px; white-space: nowrap; }
 .fold { margin-top: 6px; }
 .fold-label { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; padding: 6px 0; background: none; border: none; font: inherit; font-size: 13px; color: var(--muted); cursor: pointer; text-align: left; }
 .fold-label .caret { font-size: 11px; }
@@ -39,9 +39,9 @@
 .water-grid input { margin-top: 2px; }
 
 @media (min-height: 760px) {
-  #logOverlay .sheet, #tankEditOverlay .sheet, #fishEditOverlay .sheet { padding-top: 18px; }
-  #logOverlay label, #tankEditOverlay label, #fishEditOverlay label { margin-top: 12px; }
-  #logOverlay textarea, #tankEditOverlay textarea, #fishEditOverlay textarea { height: 64px; min-height: 64px; }
+  #logOverlay .sheet, #tankEditOverlay .sheet, #fishEditOverlay .sheet, #fishDeadOverlay .sheet { padding-top: 18px; }
+  #logOverlay label, #tankEditOverlay label, #fishEditOverlay label, #fishDeadOverlay label { margin-top: 12px; }
+  #logOverlay textarea, #tankEditOverlay textarea, #fishEditOverlay textarea, #fishDeadOverlay textarea { height: 64px; min-height: 64px; }
   #logOverlay .btns { margin-top: 12px; }
 }
 

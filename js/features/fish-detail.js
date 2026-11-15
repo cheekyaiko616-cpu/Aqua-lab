@@ -13,20 +13,28 @@ function openFish(id, refresh) {
   const today = todayStr();
   const facts = ["水槽：" + tankName(f.tankId), (f.count || 1) + "匹"];
   if (f.sex) facts.push(f.sex);
-  if (f.acquired) facts.push("迎えた日 " + fmtSlash(f.acquired) + "（" + (Math.max(0, daysBetween(f.acquired, today)) + 1) + "日目）");
+  if (f.deceased) {
+    facts.push("死亡 " + fmtSlash(f.deceased));
+    if (f.acquired) facts.push("迎えた日 " + fmtSlash(f.acquired) + "（飼育 " + (Math.max(0, daysBetween(f.acquired, f.deceased)) + 1) + "日）");
+  } else if (f.acquired) facts.push("迎えた日 " + fmtSlash(f.acquired) + "（" + (Math.max(0, daysBetween(f.acquired, today)) + 1) + "日目）");
 
-  const head = '<div class="detail-head" style="' + fishStyle(f) + '"><div class="thumb">' + fishThumb(f) + '</div><div style="min-width:0;">' +
+  const head = '<div class="detail-head' + (f.deceased ? ' dead' : '') + '" style="' + fishStyle(f) + '"><div class="thumb">' + fishThumb(f) + '</div><div style="min-width:0;">' +
     '<h2 id="fishTitle">' + escapeHtml(fishLabel(f)) + '</h2><span class="chip" style="' + fishStyle(f) + '">' + FISH_CATS[fishCatOf(f)].icon + ' ' + escapeHtml(fishSpecies(f)) + '</span></div></div>' +
     '<div class="facts">' + facts.map((x) => '<span>' + escapeHtml(x) + '</span>').join("") + '</div>';
 
   // 今の状態（いちばん新しい状態タグ）
   const tl = latestFishTags(f.id);
-  const stateHtml = '<div class="section"><h3>今の状態</h3>' +
-    (tl ? '<div>' + tagChipsHtml(tl.tags) + '</div><div class="hint">' + fmtSlash(tl.date) + 'の記録' + (tl.memo ? '：' + escapeHtml(tl.memo) : '') + '</div>'
-        : '<div class="hint">まだ状態の記録はありません。</div>') +
-    '<div class="btn-row"><button class="secondary" id="fishStateBtn">＋ 状態を記録</button></div></div>';
+  const stateHtml = f.deceased
+    ? '<div class="section"><h3>亡くなった記録</h3><div class="notice dead-note">死亡日：' + fmtSlash(f.deceased) + '。これまでの記録は残していますが、新しい記録は追加できません。</div>' +
+      (f.deathNote ? '<div class="memo-text">' + escapeHtml(f.deathNote) + '</div>' : '') +
+      (tl ? '<div class="hint">最後の状態：</div><div>' + tagChipsHtml(tl.tags) + '</div><div class="hint">' + fmtSlash(tl.date) + 'の記録' + (tl.memo ? '：' + escapeHtml(tl.memo) : '') + '</div>' : '') +
+      '<div class="btn-row"><button class="secondary" id="fishDeadEditBtn">死亡日・メモを直す</button></div></div>'
+    : '<div class="section"><h3>今の状態</h3>' +
+      (tl ? '<div>' + tagChipsHtml(tl.tags) + '</div><div class="hint">' + fmtSlash(tl.date) + 'の記録' + (tl.memo ? '：' + escapeHtml(tl.memo) : '') + '</div>'
+          : '<div class="hint">まだ状態の記録はありません。</div>') +
+      '<div class="btn-row"><button class="secondary" id="fishStateBtn">＋ 状態を記録</button></div></div>';
 
-  const treatHtml = fishTreatHtml(f);
+  const treatHtml = f.deceased ? "" : fishTreatHtml(f);
 
   fishPhotos = [];
   if (f.photo) fishPhotos.push({ src: f.photo, cap: "登録時の写真" });
@@ -34,11 +42,13 @@ function openFish(id, refresh) {
   const photoHtml = '<div class="section"><h3>写真</h3>' + galleryHtml(fishPhotos, "data-fphoto") + '</div>';
 
   const logHtml = '<div class="section"><h3>記録</h3>' +
-    '<div style="margin-bottom:8px;"><button class="secondary" id="fishLogBtn">＋ 記録する</button></div>' +
+    (f.deceased ? '' : '<div style="margin-bottom:8px;"><button class="secondary" id="fishLogBtn">＋ 記録する</button></div>') +
     histButtonsHtml(FISH_ACTIONS, logs, "data-fhist") + '</div>';
   const memoHtml = f.memo ? '<div class="section"><h3>メモ</h3><div class="memo-text">' + escapeHtml(f.memo) + '</div></div>' : '';
 
-  $("fishBody").innerHTML = head + treatHtml + stateHtml + photoHtml + logHtml + memoHtml;
+  const deadBtnHtml = f.deceased ? '' : '<div class="section"><div class="btn-row"><button class="secondary dead-btn" id="fishDeadBtn">死亡を記録</button></div>' +
+    '<div class="hint">亡くなった生体も記録は残ります。以降は新しい記録を追加できなくなります。</div></div>';
+  $("fishBody").innerHTML = head + treatHtml + stateHtml + photoHtml + logHtml + memoHtml + deadBtnHtml;
   if (!refresh) openOverlay("fishOverlay");
 }
 
@@ -46,7 +56,10 @@ $("fishBody").onclick = (e) => {
   const f = fishById(fishDetailId);
   if (!f) return;
   const el = e.target;
-  if (el.closest("#fishStateBtn")) { openLog({ date: todayStr(), tankId: f.tankId, fishId: f.id, action: "様子メモ", openTags: true }); return; }
+  if (el.closest("#fishDeadBtn") || el.closest("#fishDeadEditBtn")) { openFishDead(f.id); return; }
+  if (f.deceased) {   // 死亡した生体：記録の追加はできない（写真・履歴の閲覧だけ）
+    if (el.closest("#fishStateBtn") || el.closest("#fishLogBtn") || el.closest("[data-treat-log]")) return;
+  } else if (el.closest("#fishStateBtn")) { openLog({ date: todayStr(), tankId: f.tankId, fishId: f.id, action: "様子メモ", openTags: true }); return; }
   if (el.closest("#fishLogBtn")) { openLog({ date: todayStr(), tankId: f.tankId, fishId: f.id, action: "給餌" }); return; }
   if (handleTreatClick(el, f.tankId)) return;
   const hist = el.closest("[data-fhist]");
