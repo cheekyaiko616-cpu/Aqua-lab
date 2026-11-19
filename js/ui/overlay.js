@@ -6,7 +6,7 @@
 //  ・閉じたら、開く前に触っていたボタンへフォーカスを戻す
 // mode: 省略＝下へ滑り落ちて閉じる／"right"＝右へ滑って閉じる／"instant"＝すぐ消す
 const OVERLAY_IDS = ["tankOverlay", "fishOverlay", "historyOverlay", "dayOverlay", "pickOverlay", "wheelOverlay",
-  "tankPickOverlay", "tankEditOverlay", "fishEditOverlay", "fishDeadOverlay", "equipEditOverlay", "treatEditOverlay", "logOverlay", "photoOverlay", "tagOverlay", "searchOverlay", "selOverlay"];
+  "tankPickOverlay", "tankEditOverlay", "fishEditOverlay", "fishDeadOverlay", "equipEditOverlay", "treatEditOverlay", "logOverlay", "photoOverlay", "tagOverlay", "searchOverlay", "selOverlay", "itemHistOverlay"];
 const overlayStack = [];
 const overlayOpener = {};
 const overlayOnClose = {};   // 画面ごとの「閉じたときの後片付け」。各画面のファイルで登録する

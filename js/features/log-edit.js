@@ -55,7 +55,6 @@ function updateActionFields() {
   if (a === "給餌" || a === "投薬") {
     $("lItemLabel").textContent = a === "給餌" ? "餌の名前" : "薬の名前";
     $("lAmount").placeholder = a === "給餌" ? "例：ひとつまみ" : "例：規定量";
-    $("lItemList").innerHTML = pastItems(a).map((n) => '<option value="' + escapeHtml(n) + '">').join("");
     prefillLastFeed(a);
   }
   updateTagKind();

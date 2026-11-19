@@ -186,6 +186,15 @@
   </div>
 </div>
 
+<!-- 餌・薬の履歴から選ぶ -->
+<div class="overlay" id="itemHistOverlay" role="dialog" aria-modal="true" aria-labelledby="ihTitle" style="z-index:40;">
+  <div class="sheet">
+    <h2 id="ihTitle">履歴から選ぶ</h2>
+    <div id="ihList"></div>
+    <div class="btns"><button class="secondary" id="ihCancel" type="button">閉じる</button></div>
+  </div>
+</div>
+
 <!-- 記録を探す（キーワード・水槽・生体・内容・期間で絞り込み） -->
 <div class="overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchTitle" style="z-index:22;">
   <div class="sheet">
@@ -440,7 +449,7 @@
     </div>
     <div class="act-box" id="lItemBox">
       <div class="two">
-        <div><label for="lItem" id="lItemLabel">名前</label><input type="text" id="lItem" maxlength="30" list="lItemList"><datalist id="lItemList"></datalist></div>
+        <div><label for="lItem" id="lItemLabel">名前</label><div class="item-row"><input type="text" id="lItem" maxlength="30"><button type="button" class="secondary" id="lItemHist">履歴</button></div></div>
         <div><label for="lAmount">量</label><input type="text" id="lAmount" maxlength="20"></div>
       </div>
     </div>
@@ -568,6 +577,7 @@
 <script src="js/features/photo-view.js"></script>
 <script src="js/features/picker.js"></script>
 <script src="js/features/log-edit.js"></script>
+<script src="js/features/item-history.js"></script>
 <script src="js/features/graph.js"></script>
 <script src="js/features/tag-manager.js"></script>
 <script src="js/features/shop.js"></script>
